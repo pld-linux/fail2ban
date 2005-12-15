@@ -7,10 +7,10 @@ Group:		Daemons
 URL:		http://fail2ban.sourceforge.net/
 Source0:	http://dl.sourceforge.net/fail2ban/%{name}-%{version}.tar.bz2
 # Source0-md5:	129c4e76539a22ab60d025fbf137f962
-BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 BuildRequires:	dos2unix
 Requires:	python-log4py
 BuildArch:	noarch
+BuildRoot:      %{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
 Fail2Ban scans log files like /var/log/secure and bans IP that makes
@@ -27,6 +27,7 @@ rm setup.cfg
 
 %install
 rm -rf $RPM_BUILD_ROOT
+
 install -d $RPM_BUILD_ROOT/etc/rc.d/init.d/
 PYTHONPATH=$RPM_BUILD_ROOT%{py_sitescriptdir}; export PYTHONPATH
 
@@ -53,9 +54,9 @@ if [ "$1" = "0" ]; then
 fi
 
 %files
-%doc CHANGELOG README TODO
 %defattr(644,root,root,755)
-%attr(755,root,root) /etc/rc.d/init.d/%{name}
+%doc CHANGELOG README TODO
+%attr(754,root,root) /etc/rc.d/init.d/%{name}
 %attr(755,root,root) %{_bindir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}.conf
 %{py_sitescriptdir}/*
