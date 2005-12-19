@@ -1,4 +1,5 @@
 Summary:	Ban IPs that make too many password failures
+Summary(pl):	Blokowanie IP powoduj±cych zbyt du¿o prób logowañ z b³êdnym has³em
 Name:		fail2ban
 Version:	0.6.0
 Release:	1
@@ -18,6 +19,13 @@ too many password failures. It updates firewall rules to reject the IP
 address. These rules can be defined by the user. Fail2Ban can read
 multiple log files including sshd or Apache web server logs.
 
+%description -l pl
+Fail2Ban skanuje pliki logów takie jak /var/log/secure i blokuje IP
+powoduj±ce zbyt du¿o prób logowañ z b³êdnym has³em. Uaktualnia regu³ki
+firewalla, aby odrzuciæ adres IP. Regu³ki te mog± byæ definiowane
+przez u¿ytkownika. Fail2Ban potrafi czytaæ wiele plików logów w³±cznie
+z sshd czy plikami logów serwera WWW Apache.
+
 %prep
 %setup -q
 
@@ -27,8 +35,8 @@ rm setup.cfg
 
 %install
 rm -rf $RPM_BUILD_ROOT
+install -d $RPM_BUILD_ROOT/etc/rc.d/init.d
 
-install -d $RPM_BUILD_ROOT/etc/rc.d/init.d/
 PYTHONPATH=$RPM_BUILD_ROOT%{py_sitescriptdir}; export PYTHONPATH
 
 python setup.py install \
@@ -58,5 +66,5 @@ fi
 %doc CHANGELOG README TODO
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
 %attr(755,root,root) %{_bindir}/%{name}
-%config(noreplace) %{_sysconfdir}/%{name}.conf
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/%{name}.conf
 %{py_sitescriptdir}/*
