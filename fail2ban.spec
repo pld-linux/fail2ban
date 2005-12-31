@@ -9,9 +9,10 @@ URL:		http://fail2ban.sourceforge.net/
 Source0:	http://dl.sourceforge.net/fail2ban/%{name}-%{version}.tar.bz2
 # Source0-md5:	129c4e76539a22ab60d025fbf137f962
 BuildRequires:	dos2unix
+BuildRequires:	python-devel
 Requires:	python-log4py
 BuildArch:	noarch
-BuildRoot:      %{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
 Fail2Ban scans log files like /var/log/secure and bans IP that makes
