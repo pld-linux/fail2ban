@@ -10,6 +10,7 @@ Source0:	http://dl.sourceforge.net/fail2ban/%{name}-%{version}.tar.bz2
 # Source0-md5:	129c4e76539a22ab60d025fbf137f962
 BuildRequires:	dos2unix
 BuildRequires:	python-devel
+BuildRequires:	rpmbuild(macros) >= 1.219
 Requires:	python-log4py
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -29,9 +30,10 @@ z sshd czy plikami logów serwera WWW Apache.
 
 %prep
 %setup -q
+dos2unix config/redhat-initd
+rm setup.cfg
 
 %build
-rm setup.cfg
 %{__python} setup.py build
 
 %install
@@ -41,11 +43,10 @@ install -d $RPM_BUILD_ROOT/etc/rc.d/init.d
 PYTHONPATH=$RPM_BUILD_ROOT%{py_sitescriptdir}; export PYTHONPATH
 
 python setup.py install \
-  --optimize=2 \
+	--optimize=2 \
 	--root=$RPM_BUILD_ROOT
 
-find $RPM_BUILD_ROOT%{py_sitescriptdir} -name \*.py -exec rm {} \;
-dos2unix config/redhat-initd
+%{py_postclean}
 install config/redhat-initd $RPM_BUILD_ROOT/etc/rc.d/init.d/fail2ban
 install config/fail2ban.conf.default $RPM_BUILD_ROOT%{_sysconfdir}/fail2ban.conf
 
