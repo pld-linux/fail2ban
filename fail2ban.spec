@@ -11,7 +11,9 @@ Source0:	http://dl.sourceforge.net/fail2ban/%{name}-%{version}.tar.bz2
 BuildRequires:	dos2unix
 BuildRequires:	python-devel
 BuildRequires:	rpmbuild(macros) >= 1.219
+Requires(post,preun):	/sbin/chkconfig
 Requires:	python-log4py
+Requires:	rc-scripts
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
