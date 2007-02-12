@@ -1,5 +1,5 @@
 Summary:	Ban IPs that make too many password failures
-Summary(pl.UTF-8):   Blokowanie IP powodujących zbyt dużo prób logowań z błędnym hasłem
+Summary(pl.UTF-8):	Blokowanie IP powodujących zbyt dużo prób logowań z błędnym hasłem
 Name:		fail2ban
 Version:	0.6.0
 Release:	1
