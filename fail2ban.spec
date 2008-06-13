@@ -10,7 +10,9 @@ Source0:	http://dl.sourceforge.net/fail2ban/%{name}-%{version}.tar.bz2
 # Source0-md5:	129c4e76539a22ab60d025fbf137f962
 BuildRequires:	dos2unix
 BuildRequires:	python-devel
+BuildRequires:	python-modules
 BuildRequires:	rpmbuild(macros) >= 1.219
+BuildRequires:	rpm-pythonprov >= 1.219
 Requires(post,preun):	/sbin/chkconfig
 Requires:	python-log4py
 Requires:	rc-scripts
