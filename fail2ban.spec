@@ -7,9 +7,8 @@ License:	GPL
 Group:		Daemons
 URL:		http://fail2ban.sourceforge.net/
 Source0:	http://dl.sourceforge.net/fail2ban/%{name}-%{version}.tar.bz2
-# Source0-md5:	129c4e76539a22ab60d025fbf137f962
-SOurce1:	%{name}.init
-#BuildRequires:	dos2unix
+# Source0-md5:	b438d7e2ce77a469fb0cca2a5cc0b81c
+Source1:	%{name}.init
 BuildRequires:	python-devel
 BuildRequires:	python-modules
 BuildRequires:	rpmbuild(macros) >= 1.219
