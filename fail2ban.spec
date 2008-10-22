@@ -1,14 +1,15 @@
 Summary:	Ban IPs that make too many password failures
 Summary(pl.UTF-8):	Blokowanie IP powodujących zbyt dużo prób logowań z błędnym hasłem
 Name:		fail2ban
-Version:	0.6.0
+Version:	0.8.3
 Release:	1
 License:	GPL
 Group:		Daemons
 URL:		http://fail2ban.sourceforge.net/
 Source0:	http://dl.sourceforge.net/fail2ban/%{name}-%{version}.tar.bz2
 # Source0-md5:	129c4e76539a22ab60d025fbf137f962
-BuildRequires:	dos2unix
+SOurce1:	%{name}.init
+#BuildRequires:	dos2unix
 BuildRequires:	python-devel
 BuildRequires:	python-modules
 BuildRequires:	rpmbuild(macros) >= 1.219
@@ -34,7 +35,7 @@ z sshd czy plikami logów serwera WWW Apache.
 
 %prep
 %setup -q
-dos2unix config/redhat-initd
+#dos2unix config/redhat-initd
 rm setup.cfg
 
 %build
@@ -43,6 +44,7 @@ rm setup.cfg
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/etc/rc.d/init.d
+install -d $RPM_BUILD_ROOT%{_mandir}/man1
 
 PYTHONPATH=$RPM_BUILD_ROOT%{py_sitescriptdir}; export PYTHONPATH
 
@@ -51,8 +53,9 @@ python setup.py install \
 	--root=$RPM_BUILD_ROOT
 
 %{py_postclean}
-install config/redhat-initd $RPM_BUILD_ROOT/etc/rc.d/init.d/fail2ban
-install config/fail2ban.conf.default $RPM_BUILD_ROOT%{_sysconfdir}/fail2ban.conf
+install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/fail2ban
+install man/*.1 $RPM_BUILD_ROOT%{_mandir}/man1
+
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -69,8 +72,10 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc CHANGELOG README TODO
+%doc ChangeLog README TODO COPYING
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
-%attr(755,root,root) %{_bindir}/%{name}
-%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/%{name}.conf
+%attr(755,root,root) %{_bindir}/%{name}-*
+%dir /var/run/%{name}
+%config(noreplace) %verify(not md5 mtime size) /etc/%{name}/*
 %{py_sitescriptdir}/*
+%{_mandir}/man1/*
