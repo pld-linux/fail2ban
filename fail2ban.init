@@ -49,9 +49,19 @@ stop() {
 	if [ -f /var/lock/subsys/fail2ban ]; then
 		msg_stopping fail2ban
 		daemon /usr/bin/fail2ban-client stop
-                rm -f /var/lock/subsys/fail2ban /var/run/fail2ban.pid >/dev/null 2>&1
+		rm -f /var/lock/subsys/fail2ban /var/run/fail2ban.pid >/dev/null 2>&1
 	else
 		msg_not_running fail2ban
+	fi
+}
+
+condrestart() {
+	if [ -f /var/lock/subsys/fail2ban ]; then
+		stop
+		start
+	else
+		msg_not_running fail2ban
+		RETVAL=$1
 	fi
 }
 
@@ -59,22 +69,28 @@ RETVAL=0
 # See how we were called.
 case "$1" in
   start)
-  	start
+	start
 	;;
   stop)
-  	stop
+	stop
+	;;
+  restart)
+	stop
+	start
+	;;
+  try-restart)
+	condrestart 0
+	;;
+  force-reload)
+	condrestart 7
 	;;
   status)
 	status fail2ban
 	RETVAL=$?
 	/usr/bin/fail2ban-client status
 	;;
-  restart|reload)
-	stop
-	start
-	;;
   *)
-	msg_usage "$0 {start|stop|restart|reload|status}"
+	msg_usage "$0 {start|stop|restart|try-restart|force-reload|status}"
 	exit 3
 	;;
 esac
