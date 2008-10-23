@@ -5,14 +5,14 @@ Version:	0.8.3
 Release:	1
 License:	GPL
 Group:		Daemons
-URL:		http://fail2ban.sourceforge.net/
 Source0:	http://dl.sourceforge.net/fail2ban/%{name}-%{version}.tar.bz2
 # Source0-md5:	b438d7e2ce77a469fb0cca2a5cc0b81c
 Source1:	%{name}.init
+URL:		http://fail2ban.sourceforge.net/
 BuildRequires:	python-devel
 BuildRequires:	python-modules
+BuildRequires:	rpm-pythonprov
 BuildRequires:	rpmbuild(macros) >= 1.219
-BuildRequires:	rpm-pythonprov >= 1.219
 Requires(post,preun):	/sbin/chkconfig
 Requires:	python-log4py
 Requires:	rc-scripts
@@ -34,7 +34,6 @@ z sshd czy plikami logów serwera WWW Apache.
 
 %prep
 %setup -q
-#dos2unix config/redhat-initd
 rm setup.cfg
 
 %build
@@ -47,14 +46,14 @@ install -d $RPM_BUILD_ROOT%{_mandir}/man1
 
 PYTHONPATH=$RPM_BUILD_ROOT%{py_sitescriptdir}; export PYTHONPATH
 
-python setup.py install \
+%{__python} setup.py install \
 	--optimize=2 \
 	--root=$RPM_BUILD_ROOT
 
-%{py_postclean}
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/fail2ban
 install man/*.1 $RPM_BUILD_ROOT%{_mandir}/man1
 
+%py_postclean
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -75,6 +74,7 @@ fi
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
 %attr(755,root,root) %{_bindir}/%{name}-*
 %dir /var/run/%{name}
-%config(noreplace) %verify(not md5 mtime size) /etc/%{name}/*
+%dir %{_sysconfdir}/%{name}
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/%{name}/*
 %{py_sitescriptdir}/*
 %{_mandir}/man1/*
