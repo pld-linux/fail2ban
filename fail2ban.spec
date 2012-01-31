@@ -8,6 +8,7 @@ Group:		Daemons
 Source0:	http://dl.sourceforge.net/fail2ban/%{name}-%{version}.tar.bz2
 # Source0-md5:	df94335a5d12b4750869e5fe350073fa
 Source1:	%{name}.init
+Source2:	%{name}.tmpfiles
 Patch0:		%{name}-CVE-2009-5023.patch
 URL:		http://fail2ban.sourceforge.net/
 BuildRequires:	python-devel
@@ -43,8 +44,9 @@ rm setup.cfg
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/etc/rc.d/init.d
-install -d $RPM_BUILD_ROOT%{_mandir}/man1
+install -d $RPM_BUILD_ROOT/etc/rc.d/init.d \
+	$RPM_BUILD_ROOT%{_mandir}/man1 \
+	$RPM_BUILD_ROOT/usr/lib/tmpfiles.d
 
 PYTHONPATH=$RPM_BUILD_ROOT%{py_sitescriptdir}; export PYTHONPATH
 
@@ -54,6 +56,8 @@ PYTHONPATH=$RPM_BUILD_ROOT%{py_sitescriptdir}; export PYTHONPATH
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/fail2ban
 install man/*.1 $RPM_BUILD_ROOT%{_mandir}/man1
+
+install %{SOURCE2} $RPM_BUILD_ROOT/usr/lib/tmpfiles.d/%{name}.conf
 
 %py_postclean
 
@@ -75,6 +79,7 @@ fi
 %doc ChangeLog README TODO COPYING
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
 %attr(755,root,root) %{_bindir}/%{name}-*
+/usr/lib/tmpfiles.d/%{name}.conf
 %dir /var/run/%{name}
 %dir %{_sysconfdir}/%{name}
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/%{name}/*
