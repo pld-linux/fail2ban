@@ -1,0 +1,634 @@
+diff -urN fail2ban-0.8.11.orig/config/action.d/iptables-allports.conf fail2ban-0.8.11/config/action.d/iptables-allports.conf
+--- fail2ban-0.8.11.orig/config/action.d/iptables-allports.conf	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/config/action.d/iptables-allports.conf	2014-01-06 11:20:42.599243574 +0100
+@@ -2,7 +2,8 @@
+ #
+ # Author: Cyril Jaquier
+ # Modified: Yaroslav O. Halchenko <debian@onerussian.com>
+-# 			made active on all ports from original iptables.conf
++# 			made active on all ports from original fail2ban-iptables.conf
++# Modified by Paul J aka Thanat0s for ipv6 support
+ #
+ #
+ 
+@@ -17,23 +18,23 @@
+ # Notes.:  command executed once at the start of Fail2Ban.
+ # Values:  CMD
+ #
+-actionstart = iptables -N fail2ban-<name>
+-              iptables -A fail2ban-<name> -j RETURN
+-              iptables -I <chain> -p <protocol> -j fail2ban-<name>
++actionstart = fail2ban-iptables -N fail2ban-<name>
++              fail2ban-iptables -A fail2ban-<name> -j RETURN
++              fail2ban-iptables -I <chain> -p <protocol> -j fail2ban-<name>
+ 
+ # Option:  actionstop
+ # Notes.:  command executed once at the end of Fail2Ban
+ # Values:  CMD
+ #
+-actionstop = iptables -D <chain> -p <protocol> -j fail2ban-<name>
+-             iptables -F fail2ban-<name>
+-             iptables -X fail2ban-<name>
++actionstop = fail2ban-iptables -D <chain> -p <protocol> -j fail2ban-<name>
++             fail2ban-iptables -F fail2ban-<name>
++             fail2ban-iptables -X fail2ban-<name>
+ 
+ # Option:  actioncheck
+ # Notes.:  command executed once before each actionban command
+ # Values:  CMD
+ #
+-actioncheck = iptables -n -L <chain> | grep -q 'fail2ban-<name>[ \t]'
++actioncheck = fail2ban-iptables -n -L <chain> | grep -q 'fail2ban-<name>[ \t]'
+ 
+ # Option:  actionban
+ # Notes.:  command executed when banning an IP. Take care that the
+@@ -41,7 +42,7 @@
+ # Tags:    See jail.conf(5) man page
+ # Values:  CMD
+ #
+-actionban = iptables -I fail2ban-<name> 1 -s <ip> -j <blocktype>
++actionban = fail2ban-iptables -I fail2ban-<name> 1 -s <ip> -j <blocktype>
+ 
+ # Option:  actionunban
+ # Notes.:  command executed when unbanning an IP. Take care that the
+@@ -49,7 +50,7 @@
+ # Tags:    See jail.conf(5) man page
+ # Values:  CMD
+ #
+-actionunban = iptables -D fail2ban-<name> -s <ip> -j <blocktype>
++actionunban = fail2ban-iptables -D fail2ban-<name> -s <ip> -j <blocktype>
+ 
+ [Init]
+ 
+@@ -64,7 +65,7 @@
+ protocol = tcp
+ 
+ # Option:  chain
+-# Notes    specifies the iptables chain to which the fail2ban rules should be
++# Notes    specifies the fail2ban-iptables chain to which the fail2ban rules should be
+ #          added
+ # Values:  STRING  Default: INPUT
+ chain = INPUT
+diff -urN fail2ban-0.8.11.orig/config/action.d/iptables-blocktype.conf fail2ban-0.8.11/config/action.d/iptables-blocktype.conf
+--- fail2ban-0.8.11.orig/config/action.d/iptables-blocktype.conf	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/config/action.d/iptables-blocktype.conf	2014-01-06 15:50:20.525793123 +0100
+@@ -18,5 +18,5 @@
+ #          as per the iptables man page (section 8). Common values are DROP
+ #          REJECT, REJECT --reject-with icmp-port-unreachable
+ # Values:  STRING
+-blocktype = REJECT --reject-with icmp-port-unreachable
++blocktype = REJECT
+ 
+diff -urN fail2ban-0.8.11.orig/config/action.d/iptables.conf fail2ban-0.8.11/config/action.d/iptables.conf
+--- fail2ban-0.8.11.orig/config/action.d/iptables.conf	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/config/action.d/iptables.conf	2014-01-06 11:29:00.235906639 +0100
+@@ -1,6 +1,7 @@
+ # Fail2Ban configuration file
+ #
+ # Author: Cyril Jaquier
++# Modified by Paul J aka Thanat0s for ipv6 support
+ #
+ #
+ 
+@@ -14,23 +15,23 @@
+ # Notes.:  command executed once at the start of Fail2Ban.
+ # Values:  CMD
+ #
+-actionstart = iptables -N fail2ban-<name>
+-              iptables -A fail2ban-<name> -j RETURN
+-              iptables -I <chain> -p <protocol> --dport <port> -j fail2ban-<name>
++actionstart = fail2ban-iptables -N fail2ban-<name>
++              fail2ban-iptables -A fail2ban-<name> -j RETURN
++              fail2ban-iptables -I <chain> -p <protocol> --dport <port> -j fail2ban-<name>
+ 
+ # Option:  actionstop
+ # Notes.:  command executed once at the end of Fail2Ban
+ # Values:  CMD
+ #
+-actionstop = iptables -D <chain> -p <protocol> --dport <port> -j fail2ban-<name>
+-             iptables -F fail2ban-<name>
+-             iptables -X fail2ban-<name>
++actionstop = fail2ban-iptables -D <chain> -p <protocol> --dport <port> -j fail2ban-<name>
++             fail2ban-iptables -F fail2ban-<name>
++             fail2ban-iptables -X fail2ban-<name>
+ 
+ # Option:  actioncheck
+ # Notes.:  command executed once before each actionban command
+ # Values:  CMD
+ #
+-actioncheck = iptables -n -L <chain> | grep -q 'fail2ban-<name>[ \t]'
++actioncheck = fail2ban-iptables -n -L <chain> | grep -q 'fail2ban-<name>[ \t]'
+ 
+ # Option:  actionban
+ # Notes.:  command executed when banning an IP. Take care that the
+@@ -38,7 +39,7 @@
+ # Tags:    See jail.conf(5) man page
+ # Values:  CMD
+ #
+-actionban = iptables -I fail2ban-<name> 1 -s <ip> -j <blocktype>
++actionban = fail2ban-iptables -I fail2ban-<name> 1 -s <ip> -j <blocktype>
+ 
+ # Option:  actionunban
+ # Notes.:  command executed when unbanning an IP. Take care that the
+@@ -46,7 +47,7 @@
+ # Tags:    See jail.conf(5) man page
+ # Values:  CMD
+ #
+-actionunban = iptables -D fail2ban-<name> -s <ip> -j <blocktype>
++actionunban = fail2ban-iptables -D fail2ban-<name> -s <ip> -j <blocktype>
+ 
+ [Init]
+ 
+@@ -67,7 +68,7 @@
+ protocol = tcp
+ 
+ # Option:  chain
+-# Notes    specifies the iptables chain to which the fail2ban rules should be
++# Notes    specifies the fail2ban-iptables chain to which the fail2ban rules should be
+ #          added
+ # Values:  STRING  Default: INPUT
+ chain = INPUT
+diff -urN fail2ban-0.8.11.orig/config/action.d/iptables-ipset-proto4.conf fail2ban-0.8.11/config/action.d/iptables-ipset-proto4.conf
+--- fail2ban-0.8.11.orig/config/action.d/iptables-ipset-proto4.conf	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/config/action.d/iptables-ipset-proto4.conf	2014-01-06 11:38:22.515902568 +0100
+@@ -28,13 +28,13 @@
+ # Values:  CMD
+ #
+ actionstart = ipset --create fail2ban-<name> iphash
+-              iptables -I INPUT -p <protocol> -m multiport --dports <port> -m set --match-set fail2ban-<name> src -j <blocktype>
++              fail2ban-iptables -I INPUT -p <protocol> -m multiport --dports <port> -m set --match-set fail2ban-<name> src -j <blocktype>
+ 
+ # Option:  actionstop
+ # Notes.:  command executed once at the end of Fail2Ban
+ # Values:  CMD
+ #
+-actionstop = iptables -D INPUT -p <protocol> -m multiport --dports <port> -m set --match-set fail2ban-<name> src -j <blocktype>
++actionstop = fail2ban-iptables -D INPUT -p <protocol> -m multiport --dports <port> -m set --match-set fail2ban-<name> src -j <blocktype>
+              ipset --flush fail2ban-<name>
+              ipset --destroy fail2ban-<name>
+ 
+diff -urN fail2ban-0.8.11.orig/config/action.d/iptables-ipset-proto6-allports.conf fail2ban-0.8.11/config/action.d/iptables-ipset-proto6-allports.conf
+--- fail2ban-0.8.11.orig/config/action.d/iptables-ipset-proto6-allports.conf	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/config/action.d/iptables-ipset-proto6-allports.conf	2014-01-06 11:39:21.855902139 +0100
+@@ -25,13 +25,13 @@
+ # Values:  CMD
+ #
+ actionstart = ipset create fail2ban-<name> hash:ip timeout <bantime>
+-              iptables -I INPUT -m set --match-set fail2ban-<name> src -j <blocktype>
++              fail2ban-iptables -I INPUT -m set --match-set fail2ban-<name> src -j <blocktype>
+ 
+ # Option:  actionstop
+ # Notes.:  command executed once at the end of Fail2Ban
+ # Values:  CMD
+ #
+-actionstop = iptables -D INPUT -m set --match-set fail2ban-<name> src -j <blocktype>
++actionstop = fail2ban-iptables -D INPUT -m set --match-set fail2ban-<name> src -j <blocktype>
+              ipset flush fail2ban-<name>
+              ipset destroy fail2ban-<name>
+ 
+diff -urN fail2ban-0.8.11.orig/config/action.d/iptables-ipset-proto6.conf fail2ban-0.8.11/config/action.d/iptables-ipset-proto6.conf
+--- fail2ban-0.8.11.orig/config/action.d/iptables-ipset-proto6.conf	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/config/action.d/iptables-ipset-proto6.conf	2014-01-06 11:38:58.449235641 +0100
+@@ -25,13 +25,13 @@
+ # Values:  CMD
+ #
+ actionstart = ipset create fail2ban-<name> hash:ip timeout <bantime>
+-              iptables -I INPUT -p <protocol> -m multiport --dports <port> -m set --match-set fail2ban-<name> src -j <blocktype>
++              fail2ban-iptables -I INPUT -p <protocol> -m multiport --dports <port> -m set --match-set fail2ban-<name> src -j <blocktype>
+ 
+ # Option:  actionstop
+ # Notes.:  command executed once at the end of Fail2Ban
+ # Values:  CMD
+ #
+-actionstop = iptables -D INPUT -p <protocol> -m multiport --dports <port> -m set --match-set fail2ban-<name> src -j <blocktype>
++actionstop = fail2ban-iptables -D INPUT -p <protocol> -m multiport --dports <port> -m set --match-set fail2ban-<name> src -j <blocktype>
+              ipset flush fail2ban-<name>
+              ipset destroy fail2ban-<name>
+ 
+diff -urN fail2ban-0.8.11.orig/config/action.d/iptables-multiport.conf fail2ban-0.8.11/config/action.d/iptables-multiport.conf
+--- fail2ban-0.8.11.orig/config/action.d/iptables-multiport.conf	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/config/action.d/iptables-multiport.conf	2014-01-06 11:25:24.019241537 +0100
+@@ -2,6 +2,7 @@
+ #
+ # Author: Cyril Jaquier
+ # Modified by Yaroslav Halchenko for multiport banning
++# Modified by Paul J aka Thanat0s for ipv6 support
+ #
+ 
+ [INCLUDES]
+@@ -14,23 +15,23 @@
+ # Notes.:  command executed once at the start of Fail2Ban.
+ # Values:  CMD
+ #
+-actionstart = iptables -N fail2ban-<name>
+-              iptables -A fail2ban-<name> -j RETURN
+-              iptables -I <chain> -p <protocol> -m multiport --dports <port> -j fail2ban-<name>
++actionstart = fail2ban-iptables -N fail2ban-<name>
++              fail2ban-iptables -A fail2ban-<name> -j RETURN
++              fail2ban-iptables -I <chain> -p <protocol> -m multiport --dports <port> -j fail2ban-<name>
+ 
+ # Option:  actionstop
+ # Notes.:  command executed once at the end of Fail2Ban
+ # Values:  CMD
+ #
+-actionstop = iptables -D <chain> -p <protocol> -m multiport --dports <port> -j fail2ban-<name>
+-             iptables -F fail2ban-<name>
+-             iptables -X fail2ban-<name>
++actionstop = fail2ban-iptables -D <chain> -p <protocol> -m multiport --dports <port> -j fail2ban-<name>
++             fail2ban-iptables -F fail2ban-<name>
++             fail2ban-iptables -X fail2ban-<name>
+ 
+ # Option:  actioncheck
+ # Notes.:  command executed once before each actionban command
+ # Values:  CMD
+ #
+-actioncheck = iptables -n -L <chain> | grep -q 'fail2ban-<name>[ \t]'
++actioncheck = fail2ban-iptables -n -L <chain> | grep -q 'fail2ban-<name>[ \t]'
+ 
+ # Option:  actionban
+ # Notes.:  command executed when banning an IP. Take care that the
+@@ -38,7 +39,7 @@
+ # Tags:    See jail.conf(5) man page
+ # Values:  CMD
+ #
+-actionban = iptables -I fail2ban-<name> 1 -s <ip> -j <blocktype>
++actionban = fail2ban-iptables -I fail2ban-<name> 1 -s <ip> -j <blocktype>
+ 
+ # Option:  actionunban
+ # Notes.:  command executed when unbanning an IP. Take care that the
+@@ -46,7 +47,7 @@
+ # Tags:    See jail.conf(5) man page
+ # Values:  CMD
+ #
+-actionunban = iptables -D fail2ban-<name> -s <ip> -j <blocktype>
++actionunban = fail2ban-iptables -D fail2ban-<name> -s <ip> -j <blocktype>
+ 
+ [Init]
+ 
+@@ -67,7 +68,7 @@
+ protocol = tcp
+ 
+ # Option:  chain
+-# Notes    specifies the iptables chain to which the fail2ban rules should be
++# Notes    specifies the fail2ban-iptables chain to which the fail2ban rules should be
+ #          added
+ # Values:  STRING  Default: INPUT
+ chain = INPUT
+diff -urN fail2ban-0.8.11.orig/config/action.d/iptables-multiport-log.conf fail2ban-0.8.11/config/action.d/iptables-multiport-log.conf
+--- fail2ban-0.8.11.orig/config/action.d/iptables-multiport-log.conf	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/config/action.d/iptables-multiport-log.conf	2014-01-06 11:23:13.682575814 +0100
+@@ -2,6 +2,7 @@
+ #
+ # Author: Guido Bozzetto
+ # Modified: Cyril Jaquier
++# Modified by Paul J aka Thanat0s for ipv6 support
+ #
+ # make "fail2ban-<name>" chain to match drop IP
+ # make "fail2ban-<name>-log" chain to log and drop
+@@ -19,28 +20,28 @@
+ # Notes.:  command executed once at the start of Fail2Ban.
+ # Values:  CMD
+ #
+-actionstart = iptables -N fail2ban-<name>
+-              iptables -A fail2ban-<name> -j RETURN
+-              iptables -I <chain> 1 -p <protocol> -m multiport --dports <port> -j fail2ban-<name>
+-              iptables -N fail2ban-<name>-log
+-              iptables -I fail2ban-<name>-log -j LOG --log-prefix "$(expr fail2ban-<name> : '\(.\{1,23\}\)'):DROP " --log-level warning -m limit --limit 6/m --limit-burst 2
+-              iptables -A fail2ban-<name>-log -j <blocktype>
++actionstart = fail2ban-iptables -N fail2ban-<name>
++              fail2ban-iptables -A fail2ban-<name> -j RETURN
++              fail2ban-iptables -I <chain> 1 -p <protocol> -m multiport --dports <port> -j fail2ban-<name>
++              fail2ban-iptables -N fail2ban-<name>-log
++              fail2ban-iptables -I fail2ban-<name>-log -j LOG --log-prefix "$(expr fail2ban-<name> : '\(.\{1,23\}\)'):DROP " --log-level warning -m limit --limit 6/m --limit-burst 2
++              fail2ban-iptables -A fail2ban-<name>-log -j <blocktype>
+ 
+ # Option:  actionstop
+ # Notes.:  command executed once at the end of Fail2Ban
+ # Values:  CMD
+ #
+-actionstop = iptables -D <chain> -p <protocol> -m multiport --dports <port> -j fail2ban-<name>
+-             iptables -F fail2ban-<name>
+-             iptables -F fail2ban-<name>-log
+-             iptables -X fail2ban-<name>
+-             iptables -X fail2ban-<name>-log
++actionstop = fail2ban-iptables -D <chain> -p <protocol> -m multiport --dports <port> -j fail2ban-<name>
++             fail2ban-iptables -F fail2ban-<name>
++             fail2ban-iptables -F fail2ban-<name>-log
++             fail2ban-iptables -X fail2ban-<name>
++             fail2ban-iptables -X fail2ban-<name>-log
+ 
+ # Option:  actioncheck
+ # Notes.:  command executed once before each actionban command
+ # Values:  CMD
+ #
+-actioncheck = iptables -n -L fail2ban-<name>-log >/dev/null
++actioncheck = fail2ban-iptables -n -L fail2ban-<name>-log >/dev/null
+ 
+ # Option:  actionban
+ # Notes.:  command executed when banning an IP. Take care that the
+@@ -48,7 +49,7 @@
+ # Tags:    See jail.conf(5) man page
+ # Values:  CMD
+ #
+-actionban = iptables -I fail2ban-<name> 1 -s <ip> -j fail2ban-<name>-log
++actionban = fail2ban-iptables -I fail2ban-<name> 1 -s <ip> -j fail2ban-<name>-log
+ 
+ # Option:  actionunban
+ # Notes.:  command executed when unbanning an IP. Take care that the
+@@ -56,7 +57,7 @@
+ # Tags:    See jail.conf(5) man page
+ # Values:  CMD
+ #
+-actionunban = iptables -D fail2ban-<name> -s <ip> -j fail2ban-<name>-log
++actionunban = fail2ban-iptables -D fail2ban-<name> -s <ip> -j fail2ban-<name>-log
+ 
+ [Init]
+ 
+@@ -77,7 +78,7 @@
+ protocol = tcp
+ 
+ # Option:  chain
+-# Notes    specifies the iptables chain to which the fail2ban rules should be
++# Notes    specifies the fail2ban-iptables chain to which the fail2ban rules should be
+ #          added
+ # Values:  STRING  Default: INPUT
+ chain = INPUT
+diff -urN fail2ban-0.8.11.orig/config/action.d/iptables-new.conf fail2ban-0.8.11/config/action.d/iptables-new.conf
+--- fail2ban-0.8.11.orig/config/action.d/iptables-new.conf	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/config/action.d/iptables-new.conf	2014-01-06 11:27:19.569240701 +0100
+@@ -1,8 +1,9 @@
+ # Fail2Ban configuration file
+ #
+ # Author: Cyril Jaquier
+-# Copied from iptables.conf and modified by Yaroslav Halchenko 
++# Copied from fail2ban-iptables.conf and modified by Yaroslav Halchenko 
+ #  to fullfill the needs of bugreporter dbts#350746.
++# Modified by Paul J aka Thanat0s for ipv6 support
+ #
+ #
+ 
+@@ -17,23 +18,23 @@
+ # Notes.:  command executed once at the start of Fail2Ban.
+ # Values:  CMD
+ #
+-actionstart = iptables -N fail2ban-<name>
+-              iptables -A fail2ban-<name> -j RETURN
+-              iptables -I <chain> -m state --state NEW -p <protocol> --dport <port> -j fail2ban-<name>
++actionstart = fail2ban-iptables -N fail2ban-<name>
++              fail2ban-iptables -A fail2ban-<name> -j RETURN
++              fail2ban-iptables -I <chain> -m state --state NEW -p <protocol> --dport <port> -j fail2ban-<name>
+ 
+ # Option:  actionstop
+ # Notes.:  command executed once at the end of Fail2Ban
+ # Values:  CMD
+ #
+-actionstop = iptables -D <chain> -m state --state NEW -p <protocol> --dport <port> -j fail2ban-<name>
+-             iptables -F fail2ban-<name>
+-             iptables -X fail2ban-<name>
++actionstop = fail2ban-iptables -D <chain> -m state --state NEW -p <protocol> --dport <port> -j fail2ban-<name>
++             fail2ban-iptables -F fail2ban-<name>
++             fail2ban-iptables -X fail2ban-<name>
+ 
+ # Option:  actioncheck
+ # Notes.:  command executed once before each actionban command
+ # Values:  CMD
+ #
+-actioncheck = iptables -n -L <chain> | grep -q 'fail2ban-<name>[ \t]'
++actioncheck = fail2ban-iptables -n -L <chain> | grep -q 'fail2ban-<name>[ \t]'
+ 
+ # Option:  actionban
+ # Notes.:  command executed when banning an IP. Take care that the
+@@ -41,7 +42,7 @@
+ # Tags:    See jail.conf(5) man page
+ # Values:  CMD
+ #
+-actionban = iptables -I fail2ban-<name> 1 -s <ip> -j <blocktype>
++actionban = fail2ban-iptables -I fail2ban-<name> 1 -s <ip> -j <blocktype>
+ 
+ # Option:  actionunban
+ # Notes.:  command executed when unbanning an IP. Take care that the
+@@ -49,7 +50,7 @@
+ # Tags:    See jail.conf(5) man page
+ # Values:  CMD
+ #
+-actionunban = iptables -D fail2ban-<name> -s <ip> -j <blocktype>
++actionunban = fail2ban-iptables -D fail2ban-<name> -s <ip> -j <blocktype>
+ 
+ [Init]
+ 
+@@ -70,7 +71,7 @@
+ protocol = tcp
+ 
+ # Option:  chain
+-# Notes    specifies the iptables chain to which the fail2ban rules should be
++# Notes    specifies the fail2ban-iptables chain to which the fail2ban rules should be
+ #          added
+ # Values:  STRING  Default: INPUT
+ chain = INPUT
+diff -urN fail2ban-0.8.11.orig/config/action.d/iptables-xt_recent-echo.conf fail2ban-0.8.11/config/action.d/iptables-xt_recent-echo.conf
+--- fail2ban-0.8.11.orig/config/action.d/iptables-xt_recent-echo.conf	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/config/action.d/iptables-xt_recent-echo.conf	2014-01-06 11:40:07.539235142 +0100
+@@ -33,7 +33,7 @@
+ #    own rules. The 3600 second timeout is independent and acts as a
+ #    safeguard in case the fail2ban process dies unexpectedly. The
+ #    shorter of the two timeouts actually matters.
+-actionstart = iptables -I INPUT -m recent --update --seconds 3600 --name fail2ban-<name> -j <blocktype>
++actionstart = fail2ban-iptables -I INPUT -m recent --update --seconds 3600 --name fail2ban-<name> -j <blocktype>
+ 
+ # Option:  actionstop
+ # Notes.:  command executed once at the end of Fail2Ban
+diff -urN fail2ban-0.8.11.orig/config/fail2ban.conf fail2ban-0.8.11/config/fail2ban.conf
+--- fail2ban-0.8.11.orig/config/fail2ban.conf	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/config/fail2ban.conf	2014-01-06 11:31:27.709238905 +0100
+@@ -47,3 +47,10 @@
+ #
+ pidfile = /var/run/fail2ban/fail2ban.pid
+ 
++# Option: ipv6
++# Notes.: Activate IPv6 support
++#         Warning : only with iptables action supported
++# Values: BOOLEAN Default:  disabled
++#
++ipv6 = enabled
++
+diff -urN fail2ban-0.8.11.orig/fail2ban-iptables fail2ban-0.8.11/fail2ban-iptables
+--- fail2ban-0.8.11.orig/fail2ban-iptables	1970-01-01 01:00:00.000000000 +0100
++++ fail2ban-0.8.11/fail2ban-iptables	2014-01-06 11:32:30.559238449 +0100
+@@ -0,0 +1,50 @@
++#!/usr/bin/python
++# This file is part of Fail2Ban.
++#
++# Fail2Ban is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 2 of the License, or
++# (at your option) any later version.
++#
++# Fail2Ban is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with Fail2Ban; if not, write to the Free Software
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++
++
++# Iptable wrapper, call the right iptables depending of the ip proposed
++# Author: Paul J Aka "Thanat0s"
++
++import sys, re, subprocess
++
++# Main procedure
++def main(argv):
++	concat_argv = ' '.join(argv)
++	regv4 = re.compile('([0-9]{1,3}\.){3}[0-9]{1,3}')
++	if regv4.search(concat_argv):
++		# we are facing to a ipv4
++		ret = subprocess.call(['iptables'] + argv)
++		sys.exit(ret)
++	else:
++		# if not, maybe it's a ipv6
++		regv6 = re.compile('::[A-Fa-f0-9]{1,4}|(:[A-Fa-f0-9]{1,4}){2,}')
++		if regv6.search(concat_argv):
++			ret6 = subprocess.call(['ip6tables'] + argv)
++			sys.exit(ret6)
++		else:
++			# if it's not a ipv6 either, we call both iptables
++			ret = subprocess.call(['iptables'] + argv)
++			ret6 = subprocess.call(['ip6tables'] + argv)
++			# return worst error code
++			if ret > ret6:
++				sys.exit(ret)
++			else:
++				sys.exit(ret6)
++
++# Main call, pass all variables
++if __name__ == "__main__":
++	main(sys.argv[1:])
+diff -urN fail2ban-0.8.11.orig/server/failregex.py fail2ban-0.8.11/server/failregex.py
+--- fail2ban-0.8.11.orig/server/failregex.py	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/server/failregex.py	2014-01-06 11:12:39.602580405 +0100
+@@ -41,7 +41,7 @@
+ 		self._matchCache = None
+ 		# Perform shortcuts expansions.
+ 		# Replace "<HOST>" with default regular expression for host.
+-		regex = regex.replace("<HOST>", "(?:::f{4,6}:)?(?P<host>[\w\-.^_]*\w)")
++		regex = regex.replace("<HOST>", "(?:::f{4,6}:)?(?P<host>[\w\-.^_:]*\w)")
+ 		if regex.lstrip() == '':
+ 			raise RegexException("Cannot add empty regex")
+ 		try:
+diff -urN fail2ban-0.8.11.orig/server/filter.py fail2ban-0.8.11/server/filter.py
+--- fail2ban-0.8.11.orig/server/filter.py	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/server/filter.py	2014-01-06 12:25:40.509215356 +0100
+@@ -267,7 +267,10 @@
+ 			s = i.split('/', 1)
+ 			# IP address without CIDR mask
+ 			if len(s) == 1:
+-				s.insert(1, '32')
++				if re.match(":", s[0]):
++					s.insert(1, '128')
++				else:
++					s.insert(1, '32')
+ 			s[1] = long(s[1])
+ 			try:
+ 				a = DNSUtils.cidr(s[0], s[1])
+@@ -623,6 +626,7 @@
+ class DNSUtils:
+ 
+ 	IP_CRE = re.compile("^(?:\d{1,3}\.){3}\d{1,3}$")
++	IP_CRE6 = re.compile("^(?:[0-9:A-Fa-f]{3,})$")
+ 
+ 	#@staticmethod
+ 	def dnsToIp(dns):
+@@ -646,19 +650,31 @@
+ 		if match:
+ 			return match
+ 		else:
+-			return None
++			match = DNSUtils.IP_CRE6.match(text)
++			if match:
++				""" Right Here, we faced to a ipv6
++				"""
++				return match
++			else:
++				return None
+ 	searchIP = staticmethod(searchIP)
+ 
+ 	#@staticmethod
+ 	def isValidIP(string):
+-		""" Return true if str is a valid IP
+-		"""
++		# Return true if str is a valid IP
+ 		s = string.split('/', 1)
++		# try to convert to ipv4
+ 		try:
+ 			socket.inet_aton(s[0])
+ 			return True
+ 		except socket.error:
+-			return False
++			# if it had failed try to convert ipv6
++			try:  
++				socket.inet_pton(socket.AF_INET6, s[0])
++				return True
++			except socket.error: 
++				# not a valid address in both stacks
++				return False
+ 	isValidIP = staticmethod(isValidIP)
+ 
+ 	#@staticmethod
+@@ -687,11 +703,14 @@
+ 
+ 	#@staticmethod
+ 	def cidr(i, n):
+-		""" Convert an IP address string with a CIDR mask into a 32-bit
+-			integer.
++		""" Convert an IP address string with a CIDR mask into an integer.
+ 		"""
+-		# 32-bit IPv4 address mask
+-		MASK = 0xFFFFFFFFL
++		if re.match(":", i):
++			# 128-bit IPv6 address mask
++			MASK = ((1 << 128) - 1)
++		else:
++			# 32-bit IPv4 address mask
++			MASK = 0xFFFFFFFFL
+ 		return ~(MASK >> n) & MASK & DNSUtils.addr2bin(i)
+ 	cidr = staticmethod(cidr)
+ 
+@@ -699,12 +718,21 @@
+ 	def addr2bin(string):
+ 		""" Convert a string IPv4 address into an unsigned integer.
+ 		"""
+-		return struct.unpack("!L", socket.inet_aton(string))[0]
++		try:
++			return struct.unpack("!L", socket.inet_aton(string))[0]
++		except socket.error:
++			hi, lo = struct.unpack('!QQ', socket.inet_pton(socket.AF_INET6, string))
++			return (hi << 64) | lo
+ 	addr2bin = staticmethod(addr2bin)
+ 
+ 	#@staticmethod
+ 	def bin2addr(addr):
+ 		""" Convert a numeric IPv4 address into string n.n.n.n form.
+ 		"""
+-		return socket.inet_ntoa(struct.pack("!L", addr))
++		try:
++			return socket.inet_ntoa(struct.pack("!L", addr))
++		except socket.error:
++			hi = addr >> 64
++			lo = addr & ((1 << 64) - 1)
++			return socket.inet_ntop(socket.AF_INET6, struct.pack('!QQ', hi, lo))
+ 	bin2addr = staticmethod(bin2addr)
+diff -urN fail2ban-0.8.11.orig/setup.py fail2ban-0.8.11/setup.py
+--- fail2ban-0.8.11.orig/setup.py	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/setup.py	2014-01-06 11:15:41.519245754 +0100
+@@ -48,7 +48,8 @@
+ 	scripts =	[
+ 					'fail2ban-client',
+ 					'fail2ban-server',
+-					'fail2ban-regex'
++					'fail2ban-regex',
++					'fail2ban-iptables'
+ 				],
+ 	packages =	[
+ 					'common',

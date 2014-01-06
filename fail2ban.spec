@@ -2,13 +2,14 @@ Summary:	Ban IPs that make too many password failures
 Summary(pl.UTF-8):	Blokowanie IP powodujących zbyt dużo prób logowań z błędnym hasłem
 Name:		fail2ban
 Version:	0.8.11
-Release:	2
+Release:	2.3
 License:	GPL
 Group:		Daemons
 Source0:	http://download.sourceforge.net/fail2ban/%{name}-%{version}.tar.gz
 # Source0-md5:	2182a21c7efd885f373ffc941d11914d
 Source1:	%{name}.init
 Source2:	%{name}.tmpfiles
+Patch0:		ipv6.patch
 URL:		http://fail2ban.sourceforge.net/
 BuildRequires:	python-devel
 BuildRequires:	python-modules
@@ -35,6 +36,7 @@ z sshd czy plikami logów serwera WWW Apache.
 
 %prep
 %setup -q
+%patch0 -p1
 rm setup.cfg
 
 %build
