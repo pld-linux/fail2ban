@@ -13,10 +13,12 @@ URL:		http://fail2ban.sourceforge.net/
 BuildRequires:	python-devel
 BuildRequires:	python-modules
 BuildRequires:	rpm-pythonprov
-BuildRequires:	rpmbuild(macros) >= 1.219
+BuildRequires:	rpmbuild(macros) >= 1.671
 Requires(post,preun):	/sbin/chkconfig
+Requires(post,preun,postun):	systemd-units >= 38
 Requires:	python-log4py
 Requires:	rc-scripts
+Requires:	systemd-units >= 38
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -45,7 +47,7 @@ rm setup.cfg
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/etc/rc.d/init.d \
 	$RPM_BUILD_ROOT%{_mandir}/man1 \
-	$RPM_BUILD_ROOT/usr/lib/tmpfiles.d
+	$RPM_BUILD_ROOT{%{systemdunitdir},%{systemdtmpfilesdir}}
 
 PYTHONPATH=$RPM_BUILD_ROOT%{py_sitescriptdir}; export PYTHONPATH
 
@@ -56,7 +58,8 @@ PYTHONPATH=$RPM_BUILD_ROOT%{py_sitescriptdir}; export PYTHONPATH
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/fail2ban
 install man/*.1 $RPM_BUILD_ROOT%{_mandir}/man1
 
-install files/fail2ban-tmpfiles.conf $RPM_BUILD_ROOT/usr/lib/tmpfiles.d/%{name}.conf
+install -p files/fail2ban-tmpfiles.conf $RPM_BUILD_ROOT%{systemdtmpfilesdir}/fail2ban.conf
+install -p files/fail2ban.service $RPM_BUILD_ROOT%{systemdunitdir}/fail2ban.service
 
 %py_postclean
 
@@ -66,21 +69,41 @@ rm -rf $RPM_BUILD_ROOT
 %post
 /sbin/chkconfig --add %{name}
 %service %{name} restart
+%systemd_post fail2ban.service
 
 %preun
 if [ "$1" = "0" ]; then
 	%service -q %{name} stop
 	/sbin/chkconfig --del %{name}
 fi
+%systemd_preun fail2ban.service
+
+%postun
+%systemd_reload
+
+%triggerpostun -- fail2ban < 0.8.11-3
+%systemd_trigger fail2ban.service
 
 %files
 %defattr(644,root,root,755)
 %doc ChangeLog README.md TODO COPYING
-%attr(754,root,root) /etc/rc.d/init.d/%{name}
-%attr(755,root,root) %{_bindir}/%{name}-*
-/usr/lib/tmpfiles.d/%{name}.conf
-%dir /var/run/%{name}
-%dir %{_sysconfdir}/%{name}
-%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/%{name}/*
+%attr(754,root,root) /etc/rc.d/init.d/fail2ban
+%attr(755,root,root) %{_bindir}/fail2ban-client
+%attr(755,root,root) %{_bindir}/fail2ban-iptables
+%attr(755,root,root) %{_bindir}/fail2ban-regex
+%attr(755,root,root) %{_bindir}/fail2ban-server
+%{systemdunitdir}/fail2ban.service
+%{systemdtmpfilesdir}/fail2ban.conf
+%dir /var/run/fail2ban
+%dir %{_sysconfdir}/fail2ban
+%dir %{_sysconfdir}/fail2ban/action.d
+%dir %{_sysconfdir}/fail2ban/fail2ban.d
+%dir %{_sysconfdir}/fail2ban/filter.d
+%dir %{_sysconfdir}/fail2ban/jail.d
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/fail2ban/*.conf
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/fail2ban/*/*.conf
 %{py_sitescriptdir}/*
-%{_mandir}/man1/*
+%{_mandir}/man1/fail2ban-client.1*
+%{_mandir}/man1/fail2ban-regex.1*
+%{_mandir}/man1/fail2ban-server.1*
+%{_mandir}/man1/fail2ban.1*
