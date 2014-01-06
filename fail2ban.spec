@@ -2,7 +2,7 @@ Summary:	Ban IPs that make too many password failures
 Summary(pl.UTF-8):	Blokowanie IP powodujących zbyt dużo prób logowań z błędnym hasłem
 Name:		fail2ban
 Version:	0.8.11
-Release:	2.4
+Release:	3
 License:	GPL
 Group:		Daemons
 Source0:	http://download.sourceforge.net/fail2ban/%{name}-%{version}.tar.gz
