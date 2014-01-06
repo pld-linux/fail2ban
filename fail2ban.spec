@@ -2,13 +2,14 @@ Summary:	Ban IPs that make too many password failures
 Summary(pl.UTF-8):	Blokowanie IP powodujących zbyt dużo prób logowań z błędnym hasłem
 Name:		fail2ban
 Version:	0.8.11
-Release:	2.3
+Release:	2.4
 License:	GPL
 Group:		Daemons
 Source0:	http://download.sourceforge.net/fail2ban/%{name}-%{version}.tar.gz
 # Source0-md5:	2182a21c7efd885f373ffc941d11914d
 Source1:	%{name}.init
 Patch0:		ipv6.patch
+Patch1:		private-scriptdir.patch
 URL:		http://fail2ban.sourceforge.net/
 BuildRequires:	python-devel
 BuildRequires:	python-modules
@@ -38,7 +39,11 @@ z sshd czy plikami logów serwera WWW Apache.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 rm setup.cfg
+
+# we don't want very generic named dirs directly in py_sitescriptdir
+sed -i -e 's|@@SCRIPTDIR@@|"%{py_sitescriptdir}/%{name}"|' fail2ban-{client,regex,server}
 
 %build
 %{__python} setup.py build
@@ -49,10 +54,9 @@ install -d $RPM_BUILD_ROOT/etc/rc.d/init.d \
 	$RPM_BUILD_ROOT%{_mandir}/man1 \
 	$RPM_BUILD_ROOT{%{systemdunitdir},%{systemdtmpfilesdir}}
 
-PYTHONPATH=$RPM_BUILD_ROOT%{py_sitescriptdir}; export PYTHONPATH
-
 %{__python} setup.py install \
 	--optimize=2 \
+	--install-lib=%{py_sitescriptdir}/%{name} \
 	--root=$RPM_BUILD_ROOT
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/fail2ban
@@ -102,7 +106,7 @@ fi
 %dir %{_sysconfdir}/fail2ban/jail.d
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/fail2ban/*.conf
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/fail2ban/*/*.conf
-%{py_sitescriptdir}/*
+%{py_sitescriptdir}/%{name}
 %{_mandir}/man1/fail2ban-client.1*
 %{_mandir}/man1/fail2ban-regex.1*
 %{_mandir}/man1/fail2ban-server.1*

@@ -1,0 +1,33 @@
+--- fail2ban-0.8.11/fail2ban-client~	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/fail2ban-client	2014-01-06 19:55:02.041427898 +0100
+@@ -30,7 +30,7 @@
+ try:
+ 	from common.version import version
+ except ImportError, e:
+-	sys.path.insert(1, "/usr/share/fail2ban")
++	sys.path.insert(1, @@SCRIPTDIR@@)
+ 	from common.version import version
+ 
+ # Now we can import the rest of modules
+--- fail2ban-0.8.11/fail2ban-regex~	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/fail2ban-regex	2014-01-06 19:55:23.041427746 +0100
+@@ -36,7 +36,7 @@
+ try:
+ 	from common.version import version
+ except ImportError, e:
+-	sys.path.insert(1, "/usr/share/fail2ban")
++	sys.path.insert(1, @@SCRIPTDIR@@)
+ 	from common.version import version
+ 
+ from optparse import OptionParser, Option
+--- fail2ban-0.8.11/fail2ban-server~	2013-11-12 22:06:54.000000000 +0100
++++ fail2ban-0.8.11/fail2ban-server	2014-01-06 19:55:39.534760960 +0100
+@@ -29,7 +29,7 @@
+ try:
+ 	from common.version import version
+ except ImportError, e:
+-	sys.path.insert(1, "/usr/share/fail2ban")
++	sys.path.insert(1, @@SCRIPTDIR@@)
+ 	from common.version import version
+ 
+ from server.server import Server
