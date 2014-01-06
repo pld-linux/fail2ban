@@ -8,6 +8,7 @@ Group:		Daemons
 Source0:	http://download.sourceforge.net/fail2ban/%{name}-%{version}.tar.gz
 # Source0-md5:	2182a21c7efd885f373ffc941d11914d
 Source1:	%{name}.init
+Source2:	%{name}.logrotate
 Patch0:		ipv6.patch
 Patch1:		private-scriptdir.patch
 URL:		http://fail2ban.sourceforge.net/
@@ -50,8 +51,8 @@ sed -i -e 's|@@SCRIPTDIR@@|"%{py_sitescriptdir}/%{name}"|' fail2ban-{client,rege
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/etc/rc.d/init.d \
-	$RPM_BUILD_ROOT%{_mandir}/man1 \
+install -d $RPM_BUILD_ROOT/etc/{rc.d/init.d,logrotate.d} \
+	$RPM_BUILD_ROOT{%{_mandir}/man1,/var/log} \
 	$RPM_BUILD_ROOT{%{systemdunitdir},%{systemdtmpfilesdir}}
 
 %{__python} setup.py install \
@@ -59,11 +60,15 @@ install -d $RPM_BUILD_ROOT/etc/rc.d/init.d \
 	--install-lib=%{py_sitescriptdir}/%{name} \
 	--root=$RPM_BUILD_ROOT
 
-install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/fail2ban
-install man/*.1 $RPM_BUILD_ROOT%{_mandir}/man1
+install -p man/*.1 $RPM_BUILD_ROOT%{_mandir}/man1
+
+install -p %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/fail2ban
+install -p %{SOURCE2} $RPM_BUILD_ROOT/etc/logrotate.d/fail2ban
 
 install -p files/fail2ban-tmpfiles.conf $RPM_BUILD_ROOT%{systemdtmpfilesdir}/fail2ban.conf
 install -p files/fail2ban.service $RPM_BUILD_ROOT%{systemdunitdir}/fail2ban.service
+
+:> $RPM_BUILD_ROOT/var/log/fail2ban.log
 
 %py_postclean
 
@@ -106,8 +111,10 @@ fi
 %dir %{_sysconfdir}/fail2ban/jail.d
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/fail2ban/*.conf
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/fail2ban/*/*.conf
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/logrotate.d/fail2ban
 %{py_sitescriptdir}/%{name}
 %{_mandir}/man1/fail2ban-client.1*
 %{_mandir}/man1/fail2ban-regex.1*
 %{_mandir}/man1/fail2ban-server.1*
 %{_mandir}/man1/fail2ban.1*
+%attr(640,root,logs) %ghost /var/log/fail2ban.log
