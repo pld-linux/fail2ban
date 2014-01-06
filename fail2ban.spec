@@ -11,6 +11,7 @@ Source1:	%{name}.init
 Source2:	%{name}.logrotate
 Patch0:		ipv6.patch
 Patch1:		private-scriptdir.patch
+Patch2:		logifiles.patch
 URL:		http://fail2ban.sourceforge.net/
 BuildRequires:	python-devel
 BuildRequires:	python-modules
@@ -41,6 +42,7 @@ z sshd czy plikami logów serwera WWW Apache.
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 rm setup.cfg
 
 # we don't want very generic named dirs directly in py_sitescriptdir
