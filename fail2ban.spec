@@ -8,7 +8,6 @@ Group:		Daemons
 Source0:	http://download.sourceforge.net/fail2ban/%{name}-%{version}.tar.gz
 # Source0-md5:	2182a21c7efd885f373ffc941d11914d
 Source1:	%{name}.init
-Source2:	%{name}.tmpfiles
 Patch0:		ipv6.patch
 URL:		http://fail2ban.sourceforge.net/
 BuildRequires:	python-devel
@@ -57,7 +56,7 @@ PYTHONPATH=$RPM_BUILD_ROOT%{py_sitescriptdir}; export PYTHONPATH
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/fail2ban
 install man/*.1 $RPM_BUILD_ROOT%{_mandir}/man1
 
-install %{SOURCE2} $RPM_BUILD_ROOT/usr/lib/tmpfiles.d/%{name}.conf
+install files/fail2ban-tmpfiles.conf $RPM_BUILD_ROOT/usr/lib/tmpfiles.d/%{name}.conf
 
 %py_postclean
 
