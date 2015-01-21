@@ -1,173 +1,18 @@
---- fail2ban-0.8.11/config/jail.conf.orig	2014-01-06 20:44:20.948073144 +0100
-+++ fail2ban-0.8.11/config/jail.conf	2014-01-06 20:52:15.888069706 +0100
-@@ -75,7 +75,7 @@
- filter   = sshd
- action   = iptables[name=SSH, port=ssh, protocol=tcp]
-            sendmail-whois[name=SSH, dest=you@example.com, sender=fail2ban@example.com, sendername="Fail2Ban"]
--logpath  = /var/log/sshd.log
-+logpath  = /var/log/secure
- maxretry = 5
+--- fail2ban-0.9.1/config/jail.conf~	2014-10-28 02:49:40.000000000 +0100
++++ fail2ban-0.9.1/config/jail.conf	2015-01-21 11:16:14.946314277 +0100
+@@ -33,7 +33,7 @@
+ [INCLUDES]
  
- [proftpd-iptables]
-@@ -84,7 +84,7 @@
- filter   = proftpd
- action   = iptables[name=ProFTPD, port=ftp, protocol=tcp]
-            sendmail-whois[name=ProFTPD, dest=you@example.com]
--logpath  = /var/log/proftpd/proftpd.log
-+logpath  = /var/log/secure
- maxretry = 6
+ #before = paths-distro.conf
+-before = paths-debian.conf
++before = paths-pld.conf
  
- 
-@@ -96,7 +96,7 @@
- backend  = polling
- action   = iptables[name=sasl, port=smtp, protocol=tcp]
-            sendmail-whois[name=sasl, dest=you@example.com]
--logpath  = /var/log/mail.log
-+logpath  = /var/log/maillog
- 
- 
- # ASSP SMTP Proxy Jail
-@@ -117,7 +117,7 @@
- action      = hostsdeny[daemon_list=sshd]
-               sendmail-whois[name=SSH, dest=you@example.com]
- ignoreregex = for myuser from
--logpath     = /var/log/sshd.log
-+logpath     = /var/log/secure
- 
- 
- # Here we use blackhole routes for not requiring any additional kernel support
-@@ -127,7 +127,7 @@
+ # The DEFAULT allows a global definition of the options. They can be overridden
+ # in each jail afterwards.
+@@ -723,4 +723,4 @@
+ [portsentry]
  enabled  = false
- filter   = sshd
- action   = route
--logpath  = /var/log/sshd.log
-+logpath  = /var/log/secure
- maxretry = 5
- 
- 
-@@ -141,7 +141,7 @@
- enabled  = false
- filter   = sshd
- action   = iptables-ipset-proto4[name=SSH, port=ssh, protocol=tcp]
--logpath  = /var/log/sshd.log
-+logpath  = /var/log/secure
- maxretry = 5
- 
- 
-@@ -150,7 +150,7 @@
- enabled  = false
- filter   = sshd
- action   = iptables-ipset-proto6[name=SSH, port=ssh, protocol=tcp, bantime=600]
--logpath  = /var/log/sshd.log
-+logpath  = /var/log/secure
- maxretry = 5
- 
- 
-@@ -176,7 +176,7 @@
- enabled  = false
- filter	 = apache-auth
- action   = hostsdeny
--logpath  = /var/log/apache*/*error.log
-+logpath  = /var/log/httpd/*error_log
-            /home/www/myhomepage/error.log
- maxretry = 6
- 
-@@ -197,7 +197,7 @@
- filter   = postfix
- action   = hostsdeny[file=/not/a/standard/path/hosts.deny]
-            sendmail[name=Postfix, dest=you@example.com]
--logpath  = /var/log/postfix.log
-+logpath  = /var/log/maillog
- bantime  = 300
- 
- 
-@@ -233,7 +233,7 @@
- filter   = apache-badbots
- action   = iptables-multiport[name=BadBots, port="http,https"]
-            sendmail-buffered[name=BadBots, lines=5, dest=you@example.com]
--logpath  = /var/www/*/logs/access_log
-+logpath  = /var/log/httpd/*access_log
- bantime  = 172800
- maxretry = 1
- 
-@@ -245,7 +245,7 @@
- filter   = apache-noscript
- action   = shorewall
-            sendmail[name=Postfix, dest=you@example.com]
--logpath  = /var/log/apache2/error_log
-+logpath  = /var/log/httpd/error_log
- 
- 
- # Monitor roundcube server
-@@ -276,7 +276,7 @@
- enabled  = false
- action   = iptables-multiport[name=php-url-open, port="http,https"]
- filter   = php-url-fopen
--logpath  = /var/www/*/logs/access_log
-+logpath  = /var/log/httpd/*access_log
- maxretry = 1
- 
- 
-@@ -341,7 +341,7 @@
- filter   = named-refused
- action   = iptables-multiport[name=Named, port="domain,953", protocol=tcp]
-            sendmail-whois[name=Named, dest=you@example.com]
--logpath  = /var/log/named/security.log
-+logpath  = /var/log/named/named.log
- ignoreip = 168.192.0.1
- 
- 
-@@ -385,7 +385,7 @@
- filter   = mysqld-auth
- action   = iptables[name=mysql, port=3306, protocol=tcp]
-            sendmail-whois[name=MySQL, dest=root, sender=fail2ban@example.com]
--logpath  = /var/log/mysqld.log
-+logpath  = /var/log/mysql/mysqld.log
- maxretry = 5
- 
- 
-@@ -394,7 +394,7 @@
- enabled  = false
- filter   = mysqld-auth
- action   = iptables[name=mysql, port=3306, protocol=tcp]
--logpath  = /var/log/daemon.log
-+logpath  = /var/log/mysql/mysqld.log
- maxretry = 5
- 
- 
-@@ -438,7 +438,7 @@
- enabled = false
- filter  = exim
- action  = iptables-multiport[name=exim,port="25,465,587"]
--logpath = /var/log/exim/mainlog
-+logpath = /var/log/exim/main.log
- 
- 
- [exim-spam]
-@@ -446,7 +446,7 @@
- enabled = false
- filter  = exim-spam
- action  = iptables-multiport[name=exim-spam,port="25,465,587"]
--logpath = /var/log/exim/mainlog
-+logpath = /var/log/exim/main.log
- 
- 
- [perdition]
-@@ -497,7 +497,7 @@
- enabled = false
- filter  = webmin-auth
- action  = iptables-multiport[name=webmin,port="10000"]
--logpath = /var/log/auth.log
-+logpath = /var/log/secure
- 
- 
- # dovecot defaults to logging to the mail syslog facility
-@@ -507,7 +507,7 @@
- enabled = false
- filter  = dovecot
- action  = iptables-multiport[name=dovecot, port="pop3,pop3s,imap,imaps,submission,smtps,sieve", protocol=tcp]
--logpath = /var/log/mail.log
-+logpath = /var/log/maillog
- 
- 
- [dovecot-auth]
+ logpath  = /var/lib/portsentry/portsentry.history
+-maxretry = 1
+\ Brak znaku nowej linii na końcu pliku
++maxretry = 1
