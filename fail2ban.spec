@@ -7,7 +7,7 @@ Version:	0.9.1
 Release:	0.1
 License:	GPL
 Group:		Daemons
-Source0:	https://github.com/fail2ban/fail2ban/archive/0.9.1.tar.gz
+Source0:	https://github.com/fail2ban/fail2ban/archive/%{version}.tar.gz
 # Source0-md5:	3554cc3de3f06ddfd7f90f8305b765b8
 Source1:	%{name}.init
 Source2:	%{name}.logrotate
@@ -57,14 +57,14 @@ install -d $RPM_BUILD_ROOT/etc/{rc.d/init.d,logrotate.d} \
 
 %{__python} setup.py install \
 	--optimize=2 \
-	--install-lib=%{py_sitescriptdir}/%{name} \
+	--install-lib=%{py_sitescriptdir} \
 	--root=$RPM_BUILD_ROOT
 
 install -p man/*.1 $RPM_BUILD_ROOT%{_mandir}/man1
 
 install -p %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/fail2ban
 install -p %{SOURCE2} $RPM_BUILD_ROOT/etc/logrotate.d/fail2ban
-install -p %{SOURCE3} $RPM_BUILD_ROOT/etc/fail2ban/paths-pld.conf
+install -p %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/fail2ban/paths-pld.conf
 
 install -p files/fail2ban-tmpfiles.conf $RPM_BUILD_ROOT%{systemdtmpfilesdir}/fail2ban.conf
 install -p files/fail2ban.service $RPM_BUILD_ROOT%{systemdunitdir}/fail2ban.service
