@@ -116,6 +116,7 @@ fi
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/fail2ban/*/*.conf
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/logrotate.d/fail2ban
 %{py_sitescriptdir}/%{name}
+%{py_sitescriptdir}/%{name}-%{version}-py*.egg-info
 %{_mandir}/man1/fail2ban-client.1*
 %{_mandir}/man1/fail2ban-regex.1*
 %{_mandir}/man1/fail2ban-server.1*
