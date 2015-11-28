@@ -47,7 +47,7 @@ z sshd czy plikami logów serwera WWW Apache.
 rm setup.cfg
 
 %build
-%{__python} setup.py build
+%py_build
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -55,8 +55,7 @@ install -d $RPM_BUILD_ROOT/etc/{rc.d/init.d,logrotate.d} \
 	$RPM_BUILD_ROOT{%{_mandir}/man1,/var/{log,run/fail2ban}} \
 	$RPM_BUILD_ROOT{%{systemdunitdir},%{systemdtmpfilesdir}}
 
-%{__python} setup.py install \
-	--optimize=2 \
+%py_install \
 	--install-lib=%{py_sitescriptdir} \
 	--root=$RPM_BUILD_ROOT
 
