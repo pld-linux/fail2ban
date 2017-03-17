@@ -9,10 +9,3 @@
  
  # The DEFAULT allows a global definition of the options. They can be overridden
  # in each jail afterwards.
-@@ -723,4 +723,4 @@
- [portsentry]
- enabled  = false
- logpath  = /var/lib/portsentry/portsentry.history
--maxretry = 1
-\ Brak znaku nowej linii na końcu pliku
-+maxretry = 1

@@ -6,7 +6,7 @@
 # description: Fail2ban daemon
 #              http://fail2ban.sourceforge.net/wiki/index.php/Main_Page
 # process name: fail2ban-server
-# pidfile:	/var/run/fail2ban.pid
+# pidfile:	/var/run/fail2ban/fail2ban.pid
 # config:	/etc/fail2ban/fail2ban.conf
 #
 
@@ -36,7 +36,7 @@ start() {
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/fail2ban ]; then
 		msg_starting fail2ban
-		daemon /usr/bin/fail2ban-client start
+		daemon --pidfile /var/run/fail2ban/fail2ban.pid /usr/bin/fail2ban-client start
 		RETVAL=$?
 		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/fail2ban
 	else
@@ -48,8 +48,8 @@ stop() {
 	# Stop daemons.
 	if [ -f /var/lock/subsys/fail2ban ]; then
 		msg_stopping fail2ban
-		daemon /usr/bin/fail2ban-client stop
-		rm -f /var/lock/subsys/fail2ban /var/run/fail2ban.pid >/dev/null 2>&1
+		daemon --pidfile /var/run/fail2ban/fail2ban.pid /usr/bin/fail2ban-client stop
+		rm -f /var/lock/subsys/fail2ban /var/run/fail2ban/fail2ban.pid >/dev/null 2>&1
 	else
 		msg_not_running fail2ban
 	fi
@@ -85,7 +85,7 @@ case "$1" in
 	condrestart 7
 	;;
   status)
-	status fail2ban
+	status --pidfile /var/run/fail2ban/fail2ban.pid fail2ban
 	RETVAL=$?
 	/usr/bin/fail2ban-client status
 	;;
