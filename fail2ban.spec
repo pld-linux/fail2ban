@@ -4,7 +4,7 @@ Summary:	Ban IPs that make too many password failures
 Summary(pl.UTF-8):	Blokowanie IP powodujących zbyt dużo prób logowań z błędnym hasłem
 Name:		fail2ban
 Version:	0.9.4
-Release:	1
+Release:	2
 License:	GPL
 Group:		Daemons
 Source0:	https://github.com/fail2ban/fail2ban/archive/%{version}.tar.gz
@@ -22,6 +22,7 @@ BuildRequires:	rpmbuild(macros) >= 1.710
 Requires(post,preun):	/sbin/chkconfig
 Requires(post,preun,postun):	systemd-units >= 38
 Requires:	python-log4py
+Requires:	python-modules-sqlite
 Requires:	rc-scripts
 Requires:	systemd-units >= 38
 BuildArch:	noarch
@@ -120,4 +121,6 @@ fi
 %{_mandir}/man1/fail2ban-regex.1*
 %{_mandir}/man1/fail2ban-server.1*
 %{_mandir}/man1/fail2ban.1*
+%attr(750,root,root) %dir /var/lib/%{name}
 %attr(640,root,logs) %ghost /var/log/fail2ban.log
+
