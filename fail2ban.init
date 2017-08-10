@@ -55,6 +55,16 @@ stop() {
 	fi
 }
 
+reload() {
+	if [ -f /var/lock/subsys/fail2ban ]; then
+		msg_reloading fail2ban
+		daemon --pidfile /var/run/fail2ban/fail2ban.pid /usr/bin/fail2ban-client reload
+	else
+		msg_not_running fail2ban
+	fi
+}
+
+
 condrestart() {
 	if [ -f /var/lock/subsys/fail2ban ]; then
 		stop
@@ -74,6 +84,9 @@ case "$1" in
   stop)
 	stop
 	;;
+  reload)
+	reload
+	;;
   restart)
 	stop
 	start
@@ -90,7 +103,7 @@ case "$1" in
 	/usr/bin/fail2ban-client status
 	;;
   *)
-	msg_usage "$0 {start|stop|restart|try-restart|force-reload|status}"
+	msg_usage "$0 {start|stop|reload|restart|try-restart|force-reload|status}"
 	exit 3
 	;;
 esac
