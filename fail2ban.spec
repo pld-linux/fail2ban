@@ -1,19 +1,16 @@
-# TODO:
-# - resurrect ipv6 support
 Summary:	Ban IPs that make too many password failures
 Summary(pl.UTF-8):	Blokowanie IP powodujących zbyt dużo prób logowań z błędnym hasłem
 Name:		fail2ban
-Version:	0.9.7
+Version:	0.10.0
 Release:	1
 License:	GPL
 Group:		Daemons
 Source0:	https://github.com/fail2ban/fail2ban/archive/%{version}.tar.gz
-# Source0-md5:	5e9deaea5237382940d5d58f22ca607a
+# Source0-md5:	0f504ae1f8af0ac0b600e34ff48eb374
 Source1:	%{name}.init
 Source2:	%{name}.logrotate
 Source3:	paths-pld.conf
-Patch0:		ipv6.patch
-Patch1:		logifiles.patch
+Patch0:		logifiles.patch
 URL:		http://fail2ban.sourceforge.net/
 BuildRequires:	python-devel
 BuildRequires:	python-modules
@@ -43,8 +40,7 @@ z sshd czy plikami logów serwera WWW Apache.
 
 %prep
 %setup -q
-#%patch0 -p1
-%patch1 -p1
+%patch0 -p1
 rm setup.cfg
 
 %build
