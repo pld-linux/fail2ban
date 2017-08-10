@@ -3,12 +3,12 @@
 Summary:	Ban IPs that make too many password failures
 Summary(pl.UTF-8):	Blokowanie IP powodujących zbyt dużo prób logowań z błędnym hasłem
 Name:		fail2ban
-Version:	0.9.4
-Release:	2
+Version:	0.9.7
+Release:	1
 License:	GPL
 Group:		Daemons
 Source0:	https://github.com/fail2ban/fail2ban/archive/%{version}.tar.gz
-# Source0-md5:	2dc93dff03c4da9fb95d4695e07b65d8
+# Source0-md5:	5e9deaea5237382940d5d58f22ca607a
 Source1:	%{name}.init
 Source2:	%{name}.logrotate
 Source3:	paths-pld.conf
@@ -99,6 +99,7 @@ fi
 %doc CONTRIBUTING.md ChangeLog DEVELOP FILTERS README.md RELEASE THANKS TODO COPYING
 %attr(754,root,root) /etc/rc.d/init.d/fail2ban
 %attr(755,root,root) %{_bindir}/fail2ban-client
+%attr(755,root,root) %{_bindir}/fail2ban-python
 %attr(755,root,root) %{_bindir}/fail2ban-regex
 %attr(755,root,root) %{_bindir}/fail2ban-server
 %attr(755,root,root) %{_bindir}/fail2ban-testcases
@@ -111,6 +112,8 @@ fi
 %attr(755,root,root) %{_sysconfdir}/fail2ban/action.d/smtp.py
 %dir %{_sysconfdir}/fail2ban/fail2ban.d
 %dir %{_sysconfdir}/fail2ban/filter.d
+%dir %{_sysconfdir}/fail2ban/filter.d/ignorecommands
+%attr(755,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/fail2ban/filter.d/ignorecommands/apache-fakegooglebot
 %dir %{_sysconfdir}/fail2ban/jail.d
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/fail2ban/*.conf
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/fail2ban/*/*.conf
@@ -120,6 +123,7 @@ fi
 %{_mandir}/man1/fail2ban-client.1*
 %{_mandir}/man1/fail2ban-regex.1*
 %{_mandir}/man1/fail2ban-server.1*
+%{_mandir}/man1/fail2ban-testcases.1*
 %{_mandir}/man1/fail2ban.1*
 %attr(750,root,root) %dir /var/lib/%{name}
 %attr(640,root,logs) %ghost /var/log/fail2ban.log
