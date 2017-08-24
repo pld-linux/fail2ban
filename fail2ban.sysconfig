@@ -1,0 +1,3 @@
+# Set nice level
+SERVICE_RUN_NICE_LEVEL="+19"
+
