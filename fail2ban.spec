@@ -1,18 +1,17 @@
 Summary:	Ban IPs that make too many password failures
 Summary(pl.UTF-8):	Blokowanie IP powodujących zbyt dużo prób logowań z błędnym hasłem
 Name:		fail2ban
-Version:	0.10.3.1
+Version:	0.10.4
 Release:	1
 License:	GPL
 Group:		Daemons
 Source0:	https://github.com/fail2ban/fail2ban/archive/%{version}.tar.gz
-# Source0-md5:	d47e854378cf0458ddcdc5786768d226
+# Source0-md5:	5df67c74c14e6da26df8e798deefca13
 Source1:	%{name}.init
 Source2:	%{name}.logrotate
 Source3:	paths-pld.conf
 Source4:	%{name}.sysconfig
 Patch0:		logifiles.patch
-Patch1:		version.patch
 URL:		http://fail2ban.sourceforge.net/
 BuildRequires:	python-devel
 BuildRequires:	python-modules
@@ -43,7 +42,6 @@ z sshd czy plikami logów serwera WWW Apache.
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p0
 rm setup.cfg
 
 %build
@@ -96,7 +94,7 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc CONTRIBUTING.md ChangeLog DEVELOP FILTERS README.md RELEASE THANKS TODO COPYING FILTERS
+%doc CONTRIBUTING.md ChangeLog DEVELOP FILTERS README.md RELEASE THANKS TODO COPYING FILTERS doc/run-rootless.txt
 %attr(754,root,root) /etc/rc.d/init.d/fail2ban
 %attr(755,root,root) %{_bindir}/fail2ban-client
 %attr(755,root,root) %{_bindir}/fail2ban-python
@@ -122,6 +120,7 @@ fi
 %{py_sitescriptdir}/%{name}
 %{py_sitescriptdir}/%{name}-%{version}-py*.egg-info
 %{_mandir}/man1/fail2ban-client.1*
+%{_mandir}/man1/fail2ban-python.1*
 %{_mandir}/man1/fail2ban-regex.1*
 %{_mandir}/man1/fail2ban-server.1*
 %{_mandir}/man1/fail2ban-testcases.1*
