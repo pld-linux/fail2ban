@@ -1,12 +1,12 @@
 Summary:	Ban IPs that make too many password failures
 Summary(pl.UTF-8):	Blokowanie IP powodujących zbyt dużo prób logowań z błędnym hasłem
 Name:		fail2ban
-Version:	0.10.4
-Release:	3
+Version:	0.11.1
+Release:	1
 License:	GPL
 Group:		Daemons
 Source0:	https://github.com/fail2ban/fail2ban/archive/%{version}.tar.gz
-# Source0-md5:	5df67c74c14e6da26df8e798deefca13
+# Source0-md5:	0be308ad62826030ba342b6b6012d523
 Source1:	%{name}.init
 Source2:	%{name}.logrotate
 Source3:	paths-pld.conf
@@ -46,6 +46,18 @@ z sshd czy plikami logów serwera WWW Apache.
 %patch0 -p1
 rm setup.cfg
 
+sed -E -i -e '1s,#!\s*/usr/bin/env\s+python2(\s|$),#!%{__python}\1,' -e '1s,#!\s*/usr/bin/env\s+python(\s|$),#!%{__python}\1,' -e '1s,#!\s*/usr/bin/python(\s|$),#!%{__python}\1,' \
+      bin/fail2ban-client \
+      bin/fail2ban-regex \
+      bin/fail2ban-server \
+      bin/fail2ban-testcases \
+      setup.py
+
+sed -E -i -e '1s,#!\s*/usr/bin/env\s+(.*),#!%{__bindir}\1,' \
+      config/filter.d/ignorecommands/apache-fakegooglebot \
+      fail2ban/tests/files/config/apache-auth/digest.py \
+      fail2ban/tests/files/ignorecommand.py
+
 %build
 %py_build
 
@@ -66,7 +78,7 @@ install -p %{SOURCE2} $RPM_BUILD_ROOT/etc/logrotate.d/fail2ban
 install -p %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/fail2ban/paths-pld.conf
 install -p %{SOURCE4} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
 
-install -p files/fail2ban-tmpfiles.conf $RPM_BUILD_ROOT%{systemdtmpfilesdir}/fail2ban.conf
+sed -e 's# /run# /var/run#g' files/fail2ban-tmpfiles.conf > $RPM_BUILD_ROOT%{systemdtmpfilesdir}/fail2ban.conf
 install -p build-2/fail2ban.service $RPM_BUILD_ROOT%{systemdunitdir}/fail2ban.service
 
 :> $RPM_BUILD_ROOT/var/log/fail2ban.log
@@ -96,13 +108,12 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc CONTRIBUTING.md ChangeLog DEVELOP FILTERS README.md RELEASE THANKS TODO COPYING FILTERS doc/run-rootless.txt
+%doc CONTRIBUTING.md ChangeLog DEVELOP FILTERS README.md RELEASE THANKS TODO COPYING doc/run-rootless.txt
 %attr(754,root,root) /etc/rc.d/init.d/fail2ban
 %attr(755,root,root) %{_bindir}/fail2ban-client
 %attr(755,root,root) %{_bindir}/fail2ban-python
 %attr(755,root,root) %{_bindir}/fail2ban-regex
 %attr(755,root,root) %{_bindir}/fail2ban-server
-%attr(755,root,root) %{_bindir}/fail2ban-testcases
 %{systemdunitdir}/fail2ban.service
 %{systemdtmpfilesdir}/fail2ban.conf
 %dir /var/run/fail2ban
