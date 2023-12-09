@@ -2,7 +2,7 @@
 #
 # fail2ban	
 #
-# chkconfig: 345 92 08
+# chkconfig: 345 20 08
 # description: Fail2ban daemon
 #              http://fail2ban.sourceforge.net/wiki/index.php/Main_Page
 # process name: fail2ban-server
