@@ -35,6 +35,7 @@ fi
 start() {
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/fail2ban ]; then
+		rm -f /var/run/fail2ban/fail2ban.sock > /dev/null 2>&1
 		msg_starting fail2ban
 		daemon --pidfile /var/run/fail2ban/fail2ban.pid /usr/bin/fail2ban-client start
 		RETVAL=$?
