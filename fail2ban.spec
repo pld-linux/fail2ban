@@ -66,7 +66,7 @@ sed -i -e 's#2to3#2to3-%{py3_ver}#g' fail2ban-2to3
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/etc/{rc.d/init.d,logrotate.d,sysconfig} \
-	$RPM_BUILD_ROOT{%{_mandir}/man1,/var/{log,run/fail2ban}} \
+	$RPM_BUILD_ROOT{%{_mandir}/man{1,5},/var/{log,run/fail2ban}} \
 	$RPM_BUILD_ROOT{%{systemdunitdir},%{systemdtmpfilesdir}}
 
 %py3_install \
@@ -74,6 +74,7 @@ install -d $RPM_BUILD_ROOT/etc/{rc.d/init.d,logrotate.d,sysconfig} \
 	--root=$RPM_BUILD_ROOT
 
 install -p man/*.1 $RPM_BUILD_ROOT%{_mandir}/man1
+install -p man/*.5 $RPM_BUILD_ROOT%{_mandir}/man5
 
 install -p %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/fail2ban
 install -p %{SOURCE2} $RPM_BUILD_ROOT/etc/logrotate.d/fail2ban
@@ -141,5 +142,6 @@ fi
 %{_mandir}/man1/fail2ban-server.1*
 %{_mandir}/man1/fail2ban-testcases.1*
 %{_mandir}/man1/fail2ban.1*
+%{_mandir}/man5/jail.conf.5*
 %attr(750,root,root) %dir /var/lib/%{name}
 %attr(640,root,logs) %ghost /var/log/fail2ban.log
