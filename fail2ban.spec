@@ -1,19 +1,18 @@
 Summary:	Ban IPs that make too many password failures
 Summary(pl.UTF-8):	Blokowanie IP powodujących zbyt dużo prób logowań z błędnym hasłem
 Name:		fail2ban
-Version:	1.0.2
-Release:	3
+Version:	1.1.0
+Release:	1
 License:	GPL
 Group:		Daemons
 Source0:	https://github.com/fail2ban/fail2ban/archive/%{version}.tar.gz
-# Source0-md5:	96582af04e60bf56617da9f9cbda0aa7
+# Source0-md5:	c1fbcad52a1992085eeeb326db1e849e
 Source1:	%{name}.init
 Source2:	%{name}.logrotate
 Source3:	paths-pld.conf
 Source4:	%{name}.sysconfig
 Patch0:		logifiles.patch
 URL:		http://fail2ban.sourceforge.net/
-BuildRequires:	python3-2to3
 BuildRequires:	python3-devel
 BuildRequires:	python3-modules
 BuildRequires:	rpm-pythonprov
@@ -57,9 +56,6 @@ sed -E -i -e '1s,#!\s*/usr/bin/env\s+(.*),#!%{__bindir}\1,' \
       fail2ban/tests/files/config/apache-auth/digest.py \
       fail2ban/tests/files/ignorecommand.py
 
-sed -i -e 's#2to3#2to3-%{py3_ver}#g' fail2ban-2to3
-./fail2ban-2to3
-
 %build
 %py3_build
 
@@ -80,6 +76,8 @@ install -p %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/fail2ban
 install -p %{SOURCE2} $RPM_BUILD_ROOT/etc/logrotate.d/fail2ban
 install -p %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/fail2ban/paths-pld.conf
 install -p %{SOURCE4} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
+
+rm -rf $RPM_BUILD_ROOT%{_defaultdocdir}/%{name}
 
 sed -e 's# /run# /var/run#g' files/fail2ban-tmpfiles.conf > $RPM_BUILD_ROOT%{systemdtmpfilesdir}/fail2ban.conf
 install -p build-3/fail2ban.service $RPM_BUILD_ROOT%{systemdunitdir}/fail2ban.service
