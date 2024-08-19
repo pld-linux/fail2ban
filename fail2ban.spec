@@ -12,6 +12,7 @@ Source2:	%{name}.logrotate
 Source3:	paths-pld.conf
 Source4:	%{name}.sysconfig
 Patch0:		logifiles.patch
+Patch1:		%{name}-config_from_git.patch
 URL:		http://fail2ban.sourceforge.net/
 BuildRequires:	python3-devel
 BuildRequires:	python3-modules
@@ -42,6 +43,7 @@ z sshd czy plikami logów serwera WWW Apache.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 rm setup.cfg
 
 sed -E -i -e '1s,#!\s*/usr/bin/env\s+python2(\s|$),#!%{__python3}\1,' -e '1s,#!\s*/usr/bin/env\s+python(\s|$),#!%{__python3}\1,' -e '1s,#!\s*/usr/bin/python(\s|$),#!%{__python3}\1,' \

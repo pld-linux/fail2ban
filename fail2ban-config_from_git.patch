@@ -1,0 +1,303 @@
+diff -ruN fail2ban-1.1.0/config/action.d/abuseipdb.conf fail2ban/config/action.d/abuseipdb.conf
+--- fail2ban-1.1.0/config/action.d/abuseipdb.conf	2024-04-25 23:08:13.000000000 +0200
++++ fail2ban/config/action.d/abuseipdb.conf	2024-08-19 02:14:22.317805596 +0200
+@@ -80,7 +80,7 @@
+ #          use my (Shaun's) helper PHP script by commenting out the first #actionban
+ #          line below, uncommenting the second one, and pointing the URL at
+ #          wherever you install the helper script. For the PHP helper script, see
+-#          <https://wiki.shaunc.com/wikka.php?wakka=ReportingToAbuseIPDBWithFail2Ban>
++#          <https://github.com/parseword/fail2ban-abuseipdb/>
+ #
+ # Tags:    See jail.conf(5) man page
+ # Values:  CMD
+diff -ruN fail2ban-1.1.0/config/action.d/blocklist_de.conf fail2ban/config/action.d/blocklist_de.conf
+--- fail2ban-1.1.0/config/action.d/blocklist_de.conf	2024-04-25 23:08:13.000000000 +0200
++++ fail2ban/config/action.d/blocklist_de.conf	2024-08-19 02:14:22.317805596 +0200
+@@ -30,6 +30,9 @@
+ 
+ [Definition]
+ 
++# bypass reporting of restored (already reported) tickets:
++norestored = 1
++
+ # Option:  actionstart
+ # Notes.:  command executed on demand at the first ban (or at the start of Fail2Ban if actionstart_on_demand is set to false).
+ # Values:  CMD
+diff -ruN fail2ban-1.1.0/config/action.d/firewallcmd-ipset.conf fail2ban/config/action.d/firewallcmd-ipset.conf
+--- fail2ban-1.1.0/config/action.d/firewallcmd-ipset.conf	2024-04-25 23:08:13.000000000 +0200
++++ fail2ban/config/action.d/firewallcmd-ipset.conf	2024-08-19 02:14:22.318805609 +0200
+@@ -18,24 +18,24 @@
+ 
+ [Definition]
+ 
+-actionstart = <ipstype_<ipsettype>/actionstart>
++actionstart = <ipsbackend_<ipsetbackend>/actionstart>
+               firewall-cmd --direct --add-rule <family> filter <chain> 0 <actiontype> -m set --match-set <ipmset> src -j <blocktype>
+ 
+-actionflush = <ipstype_<ipsettype>/actionflush>
++actionflush = <ipsbackend_<ipsetbackend>/actionflush>
+ 
+ actionstop = firewall-cmd --direct --remove-rule <family> filter <chain> 0 <actiontype> -m set --match-set <ipmset> src -j <blocktype>
+              <actionflush>
+-             <ipstype_<ipsettype>/actionstop>
++             <ipsbackend_<ipsetbackend>/actionstop>
+ 
+-actionban = <ipstype_<ipsettype>/actionban>
++actionban = <ipsbackend_<ipsetbackend>/actionban>
+ 
+ # actionprolong = %(actionban)s
+ 
+-actionunban = <ipstype_<ipsettype>/actionunban>
++actionunban = <ipsbackend_<ipsetbackend>/actionunban>
+ 
+-[ipstype_ipset]
++[ipsbackend_ipset]
+ 
+-actionstart = ipset -exist create <ipmset> hash:ip timeout <default-ipsettime> maxelem <maxelem> <familyopt>
++actionstart = ipset -exist create <ipmset> <ipsettype> timeout <default-ipsettime> maxelem <maxelem> <familyopt>
+ 
+ actionflush = ipset flush <ipmset>
+ 
+@@ -45,9 +45,9 @@
+ 
+ actionunban = ipset -exist del <ipmset> <ip>
+ 
+-[ipstype_firewalld]
++[ipsbackend_firewalld]
+ 
+-actionstart = firewall-cmd --direct --new-ipset=<ipmset> --type=hash:ip --option=timeout=<default-ipsettime> --option=maxelem=<maxelem> <firewalld_familyopt>
++actionstart = firewall-cmd --direct --new-ipset=<ipmset> --type=<ipsettype> --option=timeout=<default-ipsettime> --option=maxelem=<maxelem> <firewalld_familyopt>
+ 
+ # TODO: there doesn't seem to be an explicit way to invoke the ipset flush function using firewall-cmd
+ actionflush = 
+@@ -60,6 +60,11 @@
+ 
+ [Init]
+ 
++# Option: ipsettype
++# Notes:  specifies type of set, see `man --pager='less -p "^SET TYPES"' ipset` for details
++# Values: hash:ip, hash:net, etc... Default: hash:ip
++ipsettype = hash:ip
++
+ # Option:  chain
+ # Notes    specifies the iptables chain to which the fail2ban rules should be
+ #          added
+@@ -87,11 +92,11 @@
+ # banaction = %(known/banaction)s[ipsettime='<timeout-bantime>']
+ timeout-bantime = $([ "<bantime>" -le 2147483 ] && echo "<bantime>" || echo 0)
+ 
+-# Option: ipsettype
+-# Notes.: defines type of ipset used for match-set (firewalld or ipset)
++# Option: ipsetbackend
++# Notes.: defines the backend of ipset used for match-set (firewalld or ipset)
+ # Values: firewalld or ipset
+ # Default: ipset
+-ipsettype = ipset
++ipsetbackend = ipset
+ 
+ # Option: actiontype
+ # Notes.: defines additions to the blocking rule
+diff -ruN fail2ban-1.1.0/config/action.d/firewallcmd-rich-rules.conf fail2ban/config/action.d/firewallcmd-rich-rules.conf
+--- fail2ban-1.1.0/config/action.d/firewallcmd-rich-rules.conf	2024-04-25 23:08:13.000000000 +0200
++++ fail2ban/config/action.d/firewallcmd-rich-rules.conf	2024-08-19 02:14:22.318805609 +0200
+@@ -35,7 +35,7 @@
+ #
+ # Because rich rules can only handle single or a range of ports we must split ports and execute the command for each port. Ports can be single and ranges separated by a comma or space for an example: http, https, 22-60, 18 smtp 
+ 
+-fwcmd_rich_rule = rule family='<family>' source address='<ip>' port port='$p' protocol='<protocol>' %(rich-suffix)s
++fwcmd_rich_rule = rule family=\"<family>\" source address=\"<ip>\" port port=\"$p\" protocol=\"<protocol>\" %(rich-suffix)s
+ 
+ actionban = ports="<port>"; for p in $(echo $ports | tr ", " " "); do firewall-cmd --add-rich-rule="%(fwcmd_rich_rule)s"; done
+ 	   
+diff -ruN fail2ban-1.1.0/config/action.d/iptables-ipset.conf fail2ban/config/action.d/iptables-ipset.conf
+--- fail2ban-1.1.0/config/action.d/iptables-ipset.conf	2024-04-25 23:08:13.000000000 +0200
++++ fail2ban/config/action.d/iptables-ipset.conf	2024-08-19 02:14:22.319805622 +0200
+@@ -24,7 +24,7 @@
+ # Notes.:  command executed on demand at the first ban (or at the start of Fail2Ban if actionstart_on_demand is set to false).
+ # Values:  CMD
+ #
+-actionstart = ipset -exist create <ipmset> hash:ip timeout <default-ipsettime> maxelem <maxelem> <familyopt>
++actionstart = ipset -exist create <ipmset> <ipsettype> timeout <default-ipsettime> maxelem <maxelem> <familyopt>
+               <_ipt_add_rules>
+ 
+ # Option:  actionflush
+@@ -66,6 +66,11 @@
+ 
+ [Init]
+ 
++# Option: ipsettype
++# Notes:  specifies type of set, see `man --pager='less -p "^SET TYPES"' ipset` for details
++# Values: hash:ip, hash:net, etc... Default: hash:ip
++ipsettype = hash:ip
++
+ # Option: default-ipsettime
+ # Notes:  specifies default timeout in seconds (handled default ipset timeout only)
+ # Values:  [ NUM ]  Default: 0 (no timeout, managed by fail2ban by unban)
+diff -ruN fail2ban-1.1.0/config/action.d/shorewall-ipset-proto6.conf fail2ban/config/action.d/shorewall-ipset-proto6.conf
+--- fail2ban-1.1.0/config/action.d/shorewall-ipset-proto6.conf	2024-04-25 23:08:13.000000000 +0200
++++ fail2ban/config/action.d/shorewall-ipset-proto6.conf	2024-08-19 02:14:22.320805635 +0200
+@@ -51,7 +51,7 @@
+ # Values:  CMD
+ #
+ actionstart = if ! ipset -quiet -name list f2b-<name> >/dev/null;
+-              then ipset -quiet -exist create f2b-<name> hash:ip timeout <default-ipsettime> maxelem <maxelem>;
++              then ipset -quiet -exist create f2b-<name> <ipsettype> timeout <default-ipsettime> maxelem <maxelem>;
+               fi
+ 
+ # Option:  actionstop
+@@ -94,6 +94,11 @@
+ 
+ [Init]
+ 
++# Option: ipsettype
++# Notes:  specifies type of set, see `man --pager='less -p "^SET TYPES"' ipset` for details
++# Values: hash:ip, hash:net, etc... Default: hash:ip
++ipsettype = hash:ip
++
+ # Option: maxelem
+ # Notes:  maximal number of elements which can be stored in the ipset
+ #         You may want to increase this for long-duration/high-volume jails
+diff -ruN fail2ban-1.1.0/config/filter.d/apache-overflows.conf fail2ban/config/filter.d/apache-overflows.conf
+--- fail2ban-1.1.0/config/filter.d/apache-overflows.conf	2024-04-25 23:08:13.000000000 +0200
++++ fail2ban/config/filter.d/apache-overflows.conf	2024-08-19 02:14:22.321805648 +0200
+@@ -8,7 +8,7 @@
+ 
+ [Definition]
+ 
+-failregex = ^%(_apache_error_client)s (?:(?:AH001[23][456]: )?Invalid (method|URI) in request\b|(?:AH00565: )?request failed: URI too long \(longer than \d+\)|request failed: erroneous characters after protocol string:|(?:AH00566: )?request failed: invalid characters in URI\b)
++failregex = ^%(_apache_error_client)s (?:(?:AH(?:001[23][456]|10244): )?[Ii]nvalid (method|URI)\b|(?:AH00565: )?request failed: URI too long \(longer than \d+\)|request failed: erroneous characters after protocol string:|(?:AH00566: )?request failed: invalid characters in URI\b)
+ 
+ ignoreregex =
+ 
+diff -ruN fail2ban-1.1.0/config/filter.d/postfix.conf fail2ban/config/filter.d/postfix.conf
+--- fail2ban-1.1.0/config/filter.d/postfix.conf	2024-04-25 23:08:13.000000000 +0200
++++ fail2ban/config/filter.d/postfix.conf	2024-08-19 02:14:22.324805688 +0200
+@@ -12,7 +12,7 @@
+ 
+ _daemon = postfix(-\w+)?/[^/\[:\s]+(?:/smtp[ds])?
+ _port = (?::\d+)?
+-_pref = [A-Z]{4}
++_pref = [A-Z]{4,}
+ 
+ prefregex = ^%(__prefix_line)s<mdpr-<mode>> <F-CONTENT>.+</F-CONTENT>$
+ 
+diff -ruN fail2ban-1.1.0/config/filter.d/proxmox.conf fail2ban/config/filter.d/proxmox.conf
+--- fail2ban-1.1.0/config/filter.d/proxmox.conf	1970-01-01 01:00:00.000000000 +0100
++++ fail2ban/config/filter.d/proxmox.conf	2024-08-19 02:14:22.324805688 +0200
+@@ -0,0 +1,20 @@
++# Fail2Ban filter for Proxmox Web GUI
++#
++# Jail example:
++#    [proxmox]
++#    enabled = true
++#    port = https,http,8006
++#    filter = proxmox
++#    logpath = /var/log/daemon.log
++#    maxretry = 3
++#    # 1 hour
++#    bantime = 3600
++
++[Definition]
++
++_daemon = pvedaemon
++
++failregex = ^\s*\S+ %(_daemon)s\[\d+\]: authentication failure; rhost=<ADDR> user=<F-USER>\S+</F-USER>
++
++ignoreregex =
++
+diff -ruN fail2ban-1.1.0/config/filter.d/recidive.conf fail2ban/config/filter.d/recidive.conf
+--- fail2ban-1.1.0/config/filter.d/recidive.conf	2024-04-25 23:08:13.000000000 +0200
++++ fail2ban/config/filter.d/recidive.conf	2024-08-19 02:14:22.324805688 +0200
+@@ -24,14 +24,15 @@
+ _daemon = (?:fail2ban(?:-server|\.actions)\s*)
+ 
+ # The name of the jail that this filter is used for. In jail.conf, name the jail using
+-# this filter 'recidive', or supply another name with `filter = recidive[_jailname="jail"]`
+-_jailname = recidive
++# this filter 'recidive', or supply another name with `filter = recidive[_jailname="jail"]`,
++# default all jails excepting recidive
++_jailname = (?!recidive\])[^\]]*
+ 
+-failregex = ^%(__prefix_line)s(?:\s*fail2ban\.actions\s*%(__pid_re)s?:\s+)?NOTICE\s+\[(?!%(_jailname)s\])(?:.*)\]\s+Ban\s+<HOST>\s*$
++failregex = ^%(__prefix_line)s(?:\s*fail2ban\.actions\s*%(__pid_re)s?:\s+)?NOTICE\s+\[<_jailname>\]\s+Ban\s+<HOST>
+ 
+ [lt_short]
+ _daemon = (?:fail2ban(?:-server|\.actions)?\s*)
+-failregex = ^%(__prefix_line)s(?:\s*fail2ban(?:\.actions)?\s*%(__pid_re)s?:\s+)?(?:NOTICE\s+)?\[(?!%(_jailname)s\])(?:.*)\]\s+Ban\s+<HOST>\s*$
++failregex = ^%(__prefix_line)s(?:\s*fail2ban(?:\.actions)?\s*%(__pid_re)s?:\s+)?(?:NOTICE\s+)?\[<_jailname>\]\s+Ban\s+<HOST>
+ 
+ [lt_journal]
+ _daemon = <lt_short/_daemon>
+diff -ruN fail2ban-1.1.0/config/filter.d/roundcube-auth.conf fail2ban/config/filter.d/roundcube-auth.conf
+--- fail2ban-1.1.0/config/filter.d/roundcube-auth.conf	2024-04-25 23:08:13.000000000 +0200
++++ fail2ban/config/filter.d/roundcube-auth.conf	2024-08-19 02:14:22.324805688 +0200
+@@ -13,10 +13,9 @@
+ 
+ [Definition]
+ 
+-prefregex = ^\s*(\[\])?(%(__hostname)s\s*(?:roundcube(?:\[(\d*)\])?:)?\s*(<[\w]+>)? IMAP Error)?: <F-CONTENT>.+</F-CONTENT>$
++prefregex = ^\s*(\[\])?(%(__hostname)s\s*(?:roundcube(?:\[(\d*)\])?:)?\s*(<[\w]+>)? IMAP Error)?: (?:<[\w]+> )?<F-CONTENT>.+</F-CONTENT>$
+ 
+-failregex = ^(?:FAILED login|Login failed) for <F-USER>.*</F-USER> from <HOST>(?:(?:\([^\)]*\))?\. (?:(?! from ).)*(?: user=(?P=user))? in \S+\.php on line \d+ \(\S+ \S+\))?$
+-            ^(?:<[\w]+> )?Failed login for <F-USER>.*</F-USER> from <HOST> in session \w+( \(error: \d\))?$
++failregex = ^(?:Login failed|(?i:Failed) login) for <F-USER>(?:(?P<simple>\S+)|.*)</F-USER> (?:against \S+ )?from <ADDR>(?:(?:\([^\)]*\))?\.(?! from ) (?(simple)(?:\S+(?! from ) )*|(?:(?! from ).)*(?: user=(?P=user))? )in \S+\.php on line \d+| in session \w+)?(?: \([^\)]*\))?$
+ 
+ ignoreregex = 
+ 
+diff -ruN fail2ban-1.1.0/config/filter.d/sshd.conf fail2ban/config/filter.d/sshd.conf
+--- fail2ban-1.1.0/config/filter.d/sshd.conf	2024-04-25 23:08:13.000000000 +0200
++++ fail2ban/config/filter.d/sshd.conf	2024-08-19 02:14:22.325805701 +0200
+@@ -16,7 +16,7 @@
+ 
+ [DEFAULT]
+ 
+-_daemon = sshd
++_daemon = sshd(?:-session)?
+ 
+ # optional prefix (logged from several ssh versions) like "error: ", "error: PAM: " or "fatal: "
+ __pref = (?:(?:error|fatal): (?:PAM: )?)?
+@@ -126,7 +126,7 @@
+ 
+ maxlines = 1
+ 
+-journalmatch = _SYSTEMD_UNIT=sshd.service + _COMM=sshd
++journalmatch = _SYSTEMD_UNIT=sshd.service + _COMM=sshd + _COMM=sshd-session
+ 
+ # DEV Notes:
+ #
+diff -ruN fail2ban-1.1.0/config/jail.conf fail2ban/config/jail.conf
+--- fail2ban-1.1.0/config/jail.conf	2024-04-25 23:08:13.000000000 +0200
++++ fail2ban/config/jail.conf	2024-08-19 02:14:22.326805714 +0200
+@@ -205,8 +205,8 @@
+ # iptables-multiport, shorewall, etc) It is used to define
+ # action_* variables. Can be overridden globally or per
+ # section within jail.local file
+-banaction = iptables-multiport
+-banaction_allports = iptables-allports
++#banaction = iptables-multiport
++#banaction_allports = iptables-allports
+ 
+ # The simplest action to take: ban only
+ action_ = %(banaction)s[port="%(port)s", protocol="%(protocol)s", chain="%(chain)s"]
+@@ -990,3 +990,6 @@
+ port    = 1080
+ logpath = %(syslog_daemon)s
+ 
++[proxmox]
++port = https,http,8006
++logpath = /var/log/daemon.log
+diff -ruN fail2ban-1.1.0/config/paths-debian.conf fail2ban/config/paths-debian.conf
+--- fail2ban-1.1.0/config/paths-debian.conf	2024-04-25 23:08:13.000000000 +0200
++++ fail2ban/config/paths-debian.conf	2024-08-19 02:14:22.326805714 +0200
+@@ -9,6 +9,11 @@
+ 
+ [DEFAULT]
+ 
++banaction = nftables
++banaction_allports = nftables[type=allports]
++
++sshd_backend = systemd
++
+ syslog_mail = /var/log/mail.log
+ 
+ # control the `mail.warn` setting, see `/etc/rsyslog.d/50-default.conf` (if commented `mail.*` wins).
