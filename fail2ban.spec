@@ -2,7 +2,7 @@ Summary:	Ban IPs that make too many password failures
 Summary(pl.UTF-8):	Blokowanie IP powodujących zbyt dużo prób logowań z błędnym hasłem
 Name:		fail2ban
 Version:	1.1.0
-Release:	1
+Release:	2
 License:	GPL
 Group:		Daemons
 Source0:	https://github.com/fail2ban/fail2ban/archive/%{version}.tar.gz
@@ -13,6 +13,7 @@ Source3:	paths-pld.conf
 Source4:	%{name}.sysconfig
 Patch0:		logifiles.patch
 Patch1:		%{name}-config_from_git.patch
+Patch2:		%{name}-config_banaction.patch
 URL:		http://fail2ban.sourceforge.net/
 BuildRequires:	python3-devel
 BuildRequires:	python3-modules
@@ -42,8 +43,9 @@ z sshd czy plikami logów serwera WWW Apache.
 
 %prep
 %setup -q
-%patch0 -p1
-%patch1 -p1
+%patch -P0 -p1
+%patch -P1 -p1
+%patch -P2 -p1
 rm setup.cfg
 
 sed -E -i -e '1s,#!\s*/usr/bin/env\s+python2(\s|$),#!%{__python3}\1,' -e '1s,#!\s*/usr/bin/env\s+python(\s|$),#!%{__python3}\1,' -e '1s,#!\s*/usr/bin/python(\s|$),#!%{__python3}\1,' \

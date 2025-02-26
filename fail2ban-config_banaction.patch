@@ -1,0 +1,12 @@
+diff -ur fail2ban-1.1.0.org/config/jail.conf fail2ban-1.1.0/config/jail.conf
+--- fail2ban-1.1.0.org/config/jail.conf	2025-02-26 15:18:36.792067480 +0100
++++ fail2ban-1.1.0/config/jail.conf	2025-02-26 15:19:02.208002200 +0100
+@@ -205,7 +205,7 @@
+ # iptables-multiport, shorewall, etc) It is used to define
+ # action_* variables. Can be overridden globally or per
+ # section within jail.local file
+-#banaction = iptables-multiport
++banaction = iptables-multiport
+ #banaction_allports = iptables-allports
+ 
+ # The simplest action to take: ban only
